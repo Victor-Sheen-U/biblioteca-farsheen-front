@@ -1,4 +1,7 @@
-/* Sistema de Diseño Global — Biblioteca farsheen (Paleta PDF + Apple Design) */
+/* Sistema de Diseño Global — Biblioteca farsheen (Paleta PDF + Apple Design + A11y) */
+@import '@fontsource/opendyslexic/400.css';
+@import '@fontsource/opendyslexic/700.css';
+
 :root {
   /* Paleta oficial del PDF «Diseño de Proyecto Biblioteca» (Anexo A) */
   --primary: #1e3a8a;
@@ -58,12 +61,10 @@
   --border-color: var(--border);
   --backdrop-bg: rgba(15, 23, 42, 0.45);
 
-  /* Scrollbar */
   --scroll-track: var(--surface-subtle);
   --scroll-thumb: var(--gray-300);
   --scroll-thumb-hover: var(--gray-400);
 
-  /* Radios estilo Apple (8 / 12 / 16 px) */
   --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 8px;
@@ -71,30 +72,27 @@
   --radius-xl: 16px;
   --radius-full: 9999px;
 
-  /* Rejilla de 8 px y layout */
   --gutter: clamp(16px, 3vw, 40px);
   --header-h: 52px;
 
-  /* Capas z-index */
   --z-content: 0;
   --z-sidebar: 90;
   --z-header: 100;
   --z-theme-toggle: 120;
   --z-backdrop: 1000;
   --z-panel: 1010;
+  --z-a11y: 1050;
   --z-toast: 1100;
 
-  /* Tipografía del sistema + escala del PDF (Anexo A) */
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
-  --fs-xs: 0.75rem; /* 12px caption/badges */
-  --fs-sm: 0.875rem; /* 14px subtexto/tablas */
-  --fs-base: 1rem; /* 16px cuerpo */
-  --fs-lg: 1.125rem; /* 18px H3 */
-  --fs-xl: 1.5rem; /* 24px H2 */
-  --fs-2xl: 2rem; /* 32px H1 */
-  --fs-3xl: clamp(2rem, 3.6vw, 3rem); /* Hero hasta 48px */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: 2rem;
+  --fs-3xl: clamp(2rem, 3.6vw, 3rem);
 
-  /* Sombras sutiles */
   --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.05);
   --shadow-md: 0 4px 12px -2px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.04);
   --shadow-lg: 0 12px 24px -4px rgb(15 23 42 / 0.12), 0 4px 8px -4px rgb(15 23 42 / 0.06);
@@ -157,6 +155,203 @@ html.dark-theme {
   --shadow-xl: 0 24px 36px -6px rgba(0, 0, 0, 0.85);
 }
 
+/* ============================================================================
+ * ACCESIBILIDAD A1–A11 (precedencia superior a tema claro/oscuro)
+ * ============================================================================ */
+
+/* A1: Alto contraste claro (WCAG AAA >= 7:1) */
+html.a11y-contrast-high,
+html.dark-theme.a11y-contrast-high {
+  --primary: #0b256b;
+  --primary-hover: #07194b;
+  --secondary: #034e8c;
+  --secondary-text: #034e8c; /* ~8.6:1 sobre #FFFFFF */
+  --tertiary: #92400e;
+  --tertiary-text: #78350f;
+
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-subtle: #f1f5f9;
+  --surface-input: #ffffff;
+  --text: #000000; /* 21:1 sobre #FFFFFF */
+  --text-muted: #1e293b; /* 14.6:1 sobre #FFFFFF */
+  --border: #0f172a;
+
+  --success: #065f46;
+  --error: #991b1b;
+
+  --primary-50: #dbeafe;
+  --primary-100: #1e3a8a;
+  --primary-500: #034e8c;
+  --primary-600: #0b256b;
+  --primary-700: #07194b;
+  --accent-text: #034e8c;
+  --bg-main: #ffffff;
+  --surface-card: #ffffff;
+  --text-main: #000000;
+  --border-color: #0f172a;
+  --success-700: #065f46;
+  --danger-700: #991b1b;
+}
+
+/* A1: Alto contraste oscuro (WCAG AAA >= 7:1) */
+html.a11y-contrast-dark,
+html.dark-theme.a11y-contrast-dark {
+  --primary: #1d4ed8;
+  --primary-hover: #2563eb;
+  --secondary: #7dd3fc;
+  --secondary-text: #bae6fd; /* ~15:1 sobre #000000 */
+  --tertiary: #fbbf24;
+  --tertiary-text: #fde68a;
+
+  --bg: #000000;
+  --surface: #0a0f1a;
+  --surface-subtle: #05080f;
+  --surface-input: #000000;
+  --text: #ffffff; /* 21:1 sobre #000000 */
+  --text-muted: #e2e8f0; /* 16.5:1 sobre #000000 */
+  --border: #94a3b8;
+
+  --success: #6ee7b7;
+  --error: #fca5a5;
+
+  --primary-50: #0f1e3d;
+  --primary-100: #38bdf8;
+  --primary-500: #7dd3fc;
+  --primary-600: #1d4ed8;
+  --primary-700: #2563eb;
+  --accent-text: #bae6fd;
+  --bg-main: #000000;
+  --surface-card: #0a0f1a;
+  --text-main: #ffffff;
+  --border-color: #94a3b8;
+  --success-700: #6ee7b7;
+  --danger-700: #fca5a5;
+}
+
+html.a11y-contrast-high :focus-visible,
+html.a11y-contrast-dark :focus-visible {
+  outline: 3px solid var(--secondary) !important;
+  outline-offset: 3px !important;
+}
+
+/* A2: Resaltar enlaces */
+html.a11y-highlight-links a:not(.brand),
+html.a11y-highlight-links [role='link'],
+html.a11y-highlight-links .site-header__link,
+html.a11y-highlight-links .subbar__link {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+  outline: 1px dashed var(--secondary);
+  outline-offset: 2px;
+}
+
+/* A3: Agrandar texto en raíz (la UI usa rem) */
+html.a11y-font-scaled {
+  font-size: var(--a11y-font-scale, 100%);
+}
+
+/* A4: Espaciado de texto WCAG 1.4.12 */
+html.a11y-text-spacing body,
+html.a11y-text-spacing p,
+html.a11y-text-spacing li,
+html.a11y-text-spacing span,
+html.a11y-text-spacing a,
+html.a11y-text-spacing label,
+html.a11y-text-spacing h1,
+html.a11y-text-spacing h2,
+html.a11y-text-spacing h3 {
+  letter-spacing: 0.12em !important;
+  word-spacing: 0.16em !important;
+}
+
+html.a11y-text-spacing p {
+  margin-bottom: 2em !important;
+}
+
+/* A5: Altura de línea */
+html.a11y-line-height body,
+html.a11y-line-height p,
+html.a11y-line-height li,
+html.a11y-line-height dd,
+html.a11y-line-height td {
+  line-height: var(--a11y-line-height, 1.5) !important;
+}
+
+/* A6: Texto alineado en bloques de texto (no rompe rejillas ni formularios) */
+html.a11y-text-aligned p,
+html.a11y-text-aligned h1,
+html.a11y-text-aligned h2,
+html.a11y-text-aligned h3,
+html.a11y-text-aligned li {
+  text-align: var(--a11y-text-align, left) !important;
+}
+
+/* A7: Fuente apta para dislexia (OFL local) */
+html.a11y-dyslexia-font,
+html.a11y-dyslexia-font body,
+html.a11y-dyslexia-font input,
+html.a11y-dyslexia-font button,
+html.a11y-dyslexia-font select,
+html.a11y-dyslexia-font textarea {
+  font-family:
+    'OpenDyslexic',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif !important;
+}
+
+/* A8: Detener animaciones */
+html.a11y-no-motion *,
+html.a11y-no-motion *::before,
+html.a11y-no-motion *::after {
+  animation: none !important;
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition: none !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* A9: Ocultar imágenes y portadas generadas manteniendo texto e iconos funcionales */
+html.a11y-hide-images img,
+html.a11y-hide-images .book-card__cover,
+html.a11y-hide-images .book-detail__cover {
+  display: none !important;
+}
+
+/* A10: Cursor grande estático (compatible CSP) */
+html.a11y-large-cursor,
+html.a11y-large-cursor * {
+  cursor:
+    url('/cursor-large.svg') 4 4,
+    auto !important;
+}
+html.a11y-large-cursor a,
+html.a11y-large-cursor button,
+html.a11y-large-cursor [role='button'],
+html.a11y-large-cursor select,
+html.a11y-large-cursor input[type='checkbox'] {
+  cursor:
+    url('/cursor-pointer-large.svg') 22 22,
+    pointer !important;
+}
+
+/* A11: Saturación sobre contenido y footer (no en html para no romper position: fixed) */
+html.a11y-sat-baja .layout__main,
+html.a11y-sat-baja app-site-footer {
+  filter: saturate(0.45);
+}
+html.a11y-sat-alta .layout__main,
+html.a11y-sat-alta app-site-footer {
+  filter: saturate(1.75);
+}
+html.a11y-sat-grises .layout__main,
+html.a11y-sat-grises app-site-footer {
+  filter: grayscale(1);
+}
+
 *,
 *::before,
 *::after {
@@ -169,7 +364,6 @@ html,
 body {
   min-height: 100%;
   font-family: var(--font-sans);
-  font-size: 16px;
   background-color: var(--bg);
   color: var(--text);
   line-height: 1.5;
@@ -178,6 +372,10 @@ body {
   transition:
     background-color 0.24s cubic-bezier(0.22, 1, 0.36, 1),
     color 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body {
+  font-size: 1rem;
 }
 
 .page-container {

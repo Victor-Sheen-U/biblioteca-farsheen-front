@@ -10,8 +10,10 @@ import { CatalogoService } from '../../../../core/services/catalogo.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { ReservasService } from '../../../../core/services/reservas.service';
 import { UiStateService } from '../../../../core/services/ui-state.service';
+import { AccesibilidadService } from '../../../../core/services/accesibilidad.service';
 import { sanitizarReturnUrl } from '../../../../core/utils/return-url.util';
 import { ToastComponent } from '../../molecules/toast/toast.component';
+import { AccesibilidadWidgetComponent } from '../../organisms/accesibilidad-widget/accesibilidad-widget.component';
 import { HeaderComponent } from '../../organisms/header/header.component';
 import { ReservaDialogComponent } from '../../organisms/reserva-dialog/reserva-dialog.component';
 import { ReservasDrawerComponent } from '../../organisms/reservas-drawer/reservas-drawer.component';
@@ -29,6 +31,7 @@ import { SiteFooterComponent } from '../../organisms/site-footer/site-footer.com
     ReservasDrawerComponent,
     ReservaDialogComponent,
     ToastComponent,
+    AccesibilidadWidgetComponent,
   ],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
@@ -38,6 +41,7 @@ export class MainLayoutComponent implements OnInit {
   readonly catalogoService = inject(CatalogoService);
   readonly reservasService = inject(ReservasService);
   readonly uiState = inject(UiStateService);
+  readonly a11yService = inject(AccesibilidadService);
   private readonly notifications = inject(NotificationService);
   private readonly router = inject(Router);
 

@@ -42,4 +42,4 @@ npm run e2e                 # Suite E2E en Chromium (Playwright)
 npm audit --omit=dev        # Auditoría de dependencias de producción
 ```
 
-Consulta [ARQUITECTURA_Y_COMUNICACION.md](ARQUITECTURA_Y_COMUNICACION.md) para los flujos de autenticación, reservas y seguridad en cliente.
+Consulta [ARQUITECTURA_Y_COMUNICACION.md](ARQUITECTURA_Y_COMUNICACION.md) para los flujos de autenticación, reservas y seguridad en cliente, y [docs/ACCESIBILIDAD.md](docs/ACCESIBILIDAD.md) para el menú de accesibilidad (`CTRL+U`).

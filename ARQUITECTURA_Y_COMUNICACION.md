@@ -22,4 +22,4 @@ flowchart LR
 
 ## 4. Seguridad en cliente y tema
 - CSP estricta en `index.html`, cero `innerHTML` o `bypassSecurityTrust*`, saneado estricto de `returnUrl` anti-Open Redirect, validación de `exp` y sincronización de logout entre pestañas mediante evento `storage`.
-- Paleta del PDF en `src/styles.scss` con tema tri-estado (neutro/oscuro/claro) sin FOUC (`public/theme-init.js`).
+- Paleta del PDF en `src/styles.scss` con tema tri-estado (neutro/oscuro/claro) sin FOUC (`public/theme-init.js`) y menú de accesibilidad `A1–A13` persistido en `biblio.a11y` ([docs/ACCESIBILIDAD.md](docs/ACCESIBILIDAD.md)).

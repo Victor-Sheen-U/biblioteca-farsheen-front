@@ -1,0 +1,63 @@
+:host {
+  display: block;
+}
+
+.a11y-card {
+  width: 100%;
+  min-height: 82px;
+  min-width: 44px;
+  padding: 10px 8px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    transform 0.15s ease;
+
+  &:hover {
+    border-color: var(--secondary);
+    background: var(--bg-soft);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--secondary);
+    outline-offset: 2px;
+  }
+
+  &--active {
+    border-color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+    box-shadow: inset 0 0 0 1px var(--primary);
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+  }
+
+  &__label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  &__state {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+}

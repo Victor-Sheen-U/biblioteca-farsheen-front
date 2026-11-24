@@ -21,6 +21,7 @@ export class SiteFooterComponent {
   readonly irInicio = output<void>();
   readonly abrirReservas = output<void>();
   readonly cerrarSesion = output<void>();
+  readonly abrirAccesibilidad = output<void>();
 
   readonly config = SITE_CONFIG;
   readonly anioActual = new Date().getFullYear();

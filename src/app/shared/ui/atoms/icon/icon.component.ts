@@ -22,7 +22,20 @@ export type LucideIconName =
   | 'x'
   | 'chevron-down'
   | 'chevron-left'
-  | 'chevron-right';
+  | 'chevron-right'
+  | 'accessibility'
+  | 'contrast'
+  | 'link'
+  | 'type'
+  | 'sliders'
+  | 'align-left'
+  | 'pause-circle'
+  | 'image-off'
+  | 'mouse-pointer'
+  | 'rotate-ccw'
+  | 'move-horizontal'
+  | 'eye-off'
+  | 'sparkles';
 
 const ICON_PATHS: Record<LucideIconName, readonly string[]> = {
   home: ['M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z', 'M9 22V12h6v10'],
@@ -68,6 +81,44 @@ const ICON_PATHS: Record<LucideIconName, readonly string[]> = {
   'chevron-down': ['m6 9 6 6 6-6'],
   'chevron-left': ['m15 18-6-6 6-6'],
   'chevron-right': ['m9 18 6-6-6-6'],
+  accessibility: ['M12 4a2 2 0 1 0 0 .01', 'M5 8h14', 'M12 8v6', 'm9 21 3-7 3 7'],
+  contrast: ['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z', 'M12 2v20'],
+  link: [
+    'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71',
+    'M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71',
+  ],
+  type: ['M4 7V4h16v3', 'M9 20h6', 'M12 4v16'],
+  sliders: [
+    'M4 21v-7',
+    'M4 10V3',
+    'M12 21v-9',
+    'M12 8V3',
+    'M20 21v-5',
+    'M20 12V3',
+    'M1 14h6',
+    'M9 8h6',
+    'M17 16h6',
+  ],
+  'align-left': ['M21 6H3', 'M15 12H3', 'M17 18H3'],
+  'pause-circle': ['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z', 'M10 15V9', 'M14 15V9'],
+  'image-off': [
+    'm2 2 20 20',
+    'M10.41 10.41a2 2 0 1 1-2.83-2.83',
+    'M13.5 13.5 6 21',
+    'M3 3h18v18H3z',
+  ],
+  'mouse-pointer': ['m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z', 'm13 13 6 6'],
+  'rotate-ccw': ['M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8', 'M3 3v5h5'],
+  'move-horizontal': ['M18 8l4 4-4 4', 'M6 8l-4 4 4 4', 'M2 12h20'],
+  'eye-off': [
+    'M9.88 9.88a3 3 0 1 0 4.24 4.24',
+    'M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68',
+    'M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61',
+    'm2 2 20 20',
+  ],
+  sparkles: [
+    'M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z',
+  ],
 };
 
 @Component({

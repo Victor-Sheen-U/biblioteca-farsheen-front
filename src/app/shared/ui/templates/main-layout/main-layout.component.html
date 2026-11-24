@@ -120,6 +120,8 @@
 
   <app-toast />
 
+  <app-accesibilidad-widget />
+
   <app-site-footer
     [enInicio]="enInicio()"
     [autenticado]="authService.autenticado()"
@@ -128,5 +130,6 @@
     (irInicio)="irAlInicio()"
     (abrirReservas)="onAbrirMisReservas()"
     (cerrarSesion)="onCerrarSesion()"
+    (abrirAccesibilidad)="a11yService.abrirPanel()"
   />
 </div>

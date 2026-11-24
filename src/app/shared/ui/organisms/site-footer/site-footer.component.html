@@ -13,6 +13,15 @@
         <li>
           <a routerLink="/catalog" class="site-footer__link">Explorar catálogo</a>
         </li>
+        <li>
+          <button
+            type="button"
+            class="site-footer__link site-footer__link--btn"
+            (click)="abrirAccesibilidad.emit()"
+          >
+            Accesibilidad
+          </button>
+        </li>
       </ul>
     </div>
 
