@@ -6,35 +6,29 @@ import {
   effect,
   inject,
   input,
-  signal
+  signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LibroCatalogo } from '../../../../core/models/libro.model';
 import { AuthService } from '../../../../core/services/auth.service';
-import {
-  AutorConConteo,
-  CatalogoService
-} from '../../../../core/services/catalogo.service';
-import { FavoritosService } from '../../../../core/services/favoritos.service';
+import { AutorConConteo, CatalogoService } from '../../../../core/services/catalogo.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { UiStateService } from '../../../../core/services/ui-state.service';
 import { buscarLibrosConPuntaje } from '../../../../core/utils/busqueda-difusa';
 import { ButtonComponent } from '../../../../shared/ui/atoms/button/button.component';
+import { IconComponent } from '../../../../shared/ui/atoms/icon/icon.component';
 import { BookGridComponent } from '../../../../shared/ui/organisms/book-grid/book-grid.component';
 
-export type OrdenCatalogo =
-  | 'relevancia'
-  | 'titulo-asc'
-  | 'titulo-desc'
-  | 'anio-desc'
-  | 'anio-asc';
+export type OrdenCatalogo = 'relevancia' | 'titulo-asc' | 'titulo-desc' | 'anio-desc' | 'anio-asc';
 
 export interface ChipFiltroActivo {
   readonly id: string;
   readonly etiqueta: string;
   readonly accionRemover: () => void;
 }
+
+const TAMANO_PAGINA = 12;
 
 function parsearListaEnteros(raw: string | undefined): number[] {
   if (!raw || typeof raw !== 'string') {
@@ -45,8 +39,8 @@ function parsearListaEnteros(raw: string | undefined): number[] {
       raw
         .split(',')
         .map((s) => Number.parseInt(s.trim(), 10))
-        .filter((n) => Number.isInteger(n) && n > 0)
-    )
+        .filter((n) => Number.isInteger(n) && n > 0),
+    ),
   );
 }
 
@@ -61,13 +55,21 @@ function parsearAnio(raw: string | undefined): number | null {
   return n;
 }
 
+function parsearPagina(raw: string | undefined): number {
+  if (!raw || typeof raw !== 'string') {
+    return 1;
+  }
+  const n = Number.parseInt(raw.trim(), 10);
+  return Number.isInteger(n) && n >= 1 ? n : 1;
+}
+
 function parsearOrden(raw: string | undefined, tieneBusqueda: boolean): OrdenCatalogo {
   const validos: readonly OrdenCatalogo[] = [
     'relevancia',
     'titulo-asc',
     'titulo-desc',
     'anio-desc',
-    'anio-asc'
+    'anio-asc',
   ];
   if (raw && (validos as readonly string[]).includes(raw)) {
     if (raw === 'relevancia' && !tieneBusqueda) {
@@ -81,13 +83,12 @@ function parsearOrden(raw: string | undefined, tieneBusqueda: boolean): OrdenCat
 @Component({
   selector: 'app-catalog-page',
   standalone: true,
-  imports: [FormsModule, ButtonComponent, BookGridComponent],
+  imports: [FormsModule, ButtonComponent, IconComponent, BookGridComponent],
   templateUrl: './catalog-page.component.html',
-  styleUrl: './catalog-page.component.scss'
+  styleUrl: './catalog-page.component.scss',
 })
 export class CatalogPageComponent implements OnInit {
   readonly catalogoService = inject(CatalogoService);
-  readonly favoritosService = inject(FavoritosService);
   readonly uiState = inject(UiStateService);
   private readonly authService = inject(AuthService);
   private readonly notifications = inject(NotificationService);
@@ -99,32 +100,30 @@ export class CatalogPageComponent implements OnInit {
   readonly autores = input<string | undefined>(undefined);
   readonly desde = input<string | undefined>(undefined);
   readonly hasta = input<string | undefined>(undefined);
-  readonly fav = input<string | undefined>(undefined);
   readonly disp = input<string | undefined>(undefined);
   readonly orden = input<string | undefined>(undefined);
+  readonly page = input<string | undefined>(undefined);
 
+  readonly tamanoPagina = TAMANO_PAGINA;
   readonly filtroInternoAutor = signal<string>('');
   readonly consultaLocal = signal<string>('');
 
   readonly consultaActiva = computed<string>(() => (this.q() ?? '').trim());
   readonly generosSeleccionados = computed<readonly number[]>(() =>
-    parsearListaEnteros(this.generos())
+    parsearListaEnteros(this.generos()),
   );
   readonly autoresSeleccionados = computed<readonly number[]>(() =>
-    parsearListaEnteros(this.autores())
+    parsearListaEnteros(this.autores()),
   );
   readonly anioDesde = computed<number | null>(() => parsearAnio(this.desde()));
   readonly anioHasta = computed<number | null>(() => parsearAnio(this.hasta()));
-  readonly soloFavoritos = computed<boolean>(() => this.fav() === '1' || this.fav() === 'true');
-  readonly soloDisponibles = computed<boolean>(
-    () => this.disp() === '1' || this.disp() === 'true'
-  );
+  readonly soloDisponibles = computed<boolean>(() => this.disp() === '1' || this.disp() === 'true');
   readonly ordenActivo = computed<OrdenCatalogo>(() =>
-    parsearOrden(this.orden(), this.consultaActiva().length > 0)
+    parsearOrden(this.orden(), this.consultaActiva().length > 0),
   );
 
   readonly rangoAniosActivo = computed<boolean>(
-    () => this.anioDesde() !== null || this.anioHasta() !== null
+    () => this.anioDesde() !== null || this.anioHasta() !== null,
   );
 
   readonly autoresFiltradosSidebar = computed<readonly AutorConConteo[]>(() => {
@@ -140,32 +139,22 @@ export class CatalogPageComponent implements OnInit {
     const base = this.catalogoService.libros();
     const query = this.consultaActiva();
 
-    // 1. Búsqueda difusa ponderada
     const conPuntaje = buscarLibrosConPuntaje(base, query);
 
-    // 2. Filtros facetados
     const genIds = this.generosSeleccionados();
     const autIds = this.autoresSeleccionados();
     const desdeVal = this.anioDesde();
     const hastaVal = this.anioHasta();
-    const favActivo = this.soloFavoritos();
     const dispActivo = this.soloDisponibles();
-    const favSet = new Set(this.favoritosService.favoritosIds());
 
     const filtrados = conPuntaje.filter(({ libro }) => {
-      if (favActivo && !favSet.has(libro.idLibro)) {
-        return false;
-      }
       if (dispActivo && libro.ejemplaresDisponibles <= 0) {
         return false;
       }
       if (genIds.length > 0 && !genIds.includes(libro.idGenero)) {
         return false;
       }
-      if (
-        autIds.length > 0 &&
-        !libro.autores.some((autor) => autIds.includes(autor.idAutor))
-      ) {
+      if (autIds.length > 0 && !libro.autores.some((autor) => autIds.includes(autor.idAutor))) {
         return false;
       }
       if (desdeVal !== null || hastaVal !== null) {
@@ -182,7 +171,6 @@ export class CatalogPageComponent implements OnInit {
       return true;
     });
 
-    // 3. Ordenamiento
     const criterio = this.ordenActivo();
     const copia = [...filtrados];
 
@@ -216,6 +204,20 @@ export class CatalogPageComponent implements OnInit {
     return copia.map((item) => item.libro);
   });
 
+  readonly totalPaginas = computed<number>(() =>
+    Math.max(1, Math.ceil(this.librosFiltrados().length / TAMANO_PAGINA)),
+  );
+
+  readonly paginaActual = computed<number>(() => {
+    const solicitada = parsearPagina(this.page());
+    return Math.min(solicitada, this.totalPaginas());
+  });
+
+  readonly librosPaginados = computed<readonly LibroCatalogo[]>(() => {
+    const inicio = (this.paginaActual() - 1) * TAMANO_PAGINA;
+    return this.librosFiltrados().slice(inicio, inicio + TAMANO_PAGINA);
+  });
+
   readonly chipsActivos = computed<readonly ChipFiltroActivo[]>(() => {
     const chips: ChipFiltroActivo[] = [];
 
@@ -223,15 +225,7 @@ export class CatalogPageComponent implements OnInit {
       chips.push({
         id: 'q',
         etiqueta: `Búsqueda: «${this.consultaActiva()}»`,
-        accionRemover: () => this.actualizarParametros({ q: null })
-      });
-    }
-
-    if (this.soloFavoritos()) {
-      chips.push({
-        id: 'fav',
-        etiqueta: 'Solo mis favoritos',
-        accionRemover: () => this.actualizarParametros({ fav: null })
+        accionRemover: () => this.actualizarParametros({ q: null, page: null }),
       });
     }
 
@@ -239,31 +233,31 @@ export class CatalogPageComponent implements OnInit {
       chips.push({
         id: 'disp',
         etiqueta: 'Disponibles ahora',
-        accionRemover: () => this.actualizarParametros({ disp: null })
+        accionRemover: () => this.actualizarParametros({ disp: null, page: null }),
       });
     }
 
     const mapaGeneros = new Map(
-      this.catalogoService.generosConConteo().map((g) => [g.idGenero, g.nombreGenero])
+      this.catalogoService.generosConConteo().map((g) => [g.idGenero, g.nombreGenero]),
     );
     for (const idGen of this.generosSeleccionados()) {
       const nombre = mapaGeneros.get(idGen) ?? `Género #${idGen}`;
       chips.push({
         id: `gen-${idGen}`,
         etiqueta: `Género: ${nombre}`,
-        accionRemover: () => this.alternarGenero(idGen)
+        accionRemover: () => this.alternarGenero(idGen),
       });
     }
 
     const mapaAutores = new Map(
-      this.catalogoService.autoresConConteo().map((a) => [a.idAutor, a.nombreAutor])
+      this.catalogoService.autoresConConteo().map((a) => [a.idAutor, a.nombreAutor]),
     );
     for (const idAut of this.autoresSeleccionados()) {
       const nombre = mapaAutores.get(idAut) ?? `Autor #${idAut}`;
       chips.push({
         id: `aut-${idAut}`,
         etiqueta: `Autor: ${nombre}`,
-        accionRemover: () => this.alternarAutor(idAut)
+        accionRemover: () => this.alternarAutor(idAut),
       });
     }
 
@@ -273,7 +267,7 @@ export class CatalogPageComponent implements OnInit {
       chips.push({
         id: 'anios',
         etiqueta: `Año: ${d} – ${h}`,
-        accionRemover: () => this.actualizarParametros({ desde: null, hasta: null })
+        accionRemover: () => this.actualizarParametros({ desde: null, hasta: null, page: null }),
       });
     }
 
@@ -304,15 +298,11 @@ export class CatalogPageComponent implements OnInit {
   onCambioBusquedaSidebar(valor: string): void {
     this.consultaLocal.set(valor);
     const limpio = valor.trim();
-    this.actualizarParametros({ q: limpio || null });
-  }
-
-  alternarSoloFavoritos(checked: boolean): void {
-    this.actualizarParametros({ fav: checked ? '1' : null });
+    this.actualizarParametros({ q: limpio || null, page: null });
   }
 
   alternarSoloDisponibles(checked: boolean): void {
-    this.actualizarParametros({ disp: checked ? '1' : null });
+    this.actualizarParametros({ disp: checked ? '1' : null, page: null });
   }
 
   alternarGenero(idGenero: number): void {
@@ -321,7 +311,8 @@ export class CatalogPageComponent implements OnInit {
       ? actuales.filter((id) => id !== idGenero)
       : [...actuales, idGenero];
     this.actualizarParametros({
-      generos: nuevos.length > 0 ? nuevos.join(',') : null
+      generos: nuevos.length > 0 ? nuevos.join(',') : null,
+      page: null,
     });
   }
 
@@ -331,30 +322,40 @@ export class CatalogPageComponent implements OnInit {
       ? actuales.filter((id) => id !== idAutor)
       : [...actuales, idAutor];
     this.actualizarParametros({
-      autores: nuevos.length > 0 ? nuevos.join(',') : null
+      autores: nuevos.length > 0 ? nuevos.join(',') : null,
+      page: null,
     });
   }
 
   onCambioAnioDesde(valor: string): void {
     const parsed = parsearAnio(valor);
-    this.actualizarParametros({ desde: parsed !== null ? String(parsed) : null });
+    this.actualizarParametros({ desde: parsed !== null ? String(parsed) : null, page: null });
   }
 
   onCambioAnioHasta(valor: string): void {
     const parsed = parsearAnio(valor);
-    this.actualizarParametros({ hasta: parsed !== null ? String(parsed) : null });
+    this.actualizarParametros({ hasta: parsed !== null ? String(parsed) : null, page: null });
   }
 
   onCambioOrden(nuevoOrden: OrdenCatalogo): void {
     this.actualizarParametros({
-      orden: nuevoOrden === 'titulo-asc' && !this.consultaActiva() ? null : nuevoOrden
+      orden: nuevoOrden === 'titulo-asc' && !this.consultaActiva() ? null : nuevoOrden,
+      page: null,
     });
+  }
+
+  irAPagina(pagina: number): void {
+    const valida = Math.max(1, Math.min(pagina, this.totalPaginas()));
+    this.actualizarParametros({ page: valida === 1 ? null : String(valida) });
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   limpiarTodosLosFiltros(): void {
     this.filtroInternoAutor.set('');
     void this.router.navigate(['/catalog'], {
-      queryParams: {}
+      queryParams: {},
     });
   }
 
@@ -362,34 +363,22 @@ export class CatalogPageComponent implements OnInit {
     void this.router.navigate(['/catalog', idLibro]);
   }
 
-  onPedirPrestado(libro: LibroCatalogo): void {
+  onReservar(libro: LibroCatalogo): void {
     if (!this.authService.verificarSesionActiva()) {
-      this.notifications.show(
-        'Inicia sesión para solicitar el préstamo de este libro.',
-        'info'
-      );
+      this.notifications.show('Inicia sesión para reservar este libro.', 'info');
       void this.router.navigate(['/login'], {
-        queryParams: { returnUrl: this.router.url }
+        queryParams: { returnUrl: `/catalog/${libro.idLibro}` },
       });
       return;
     }
     this.uiState.abrirModalReserva(libro);
   }
 
-  onAlternarFavorito(idLibro: number): void {
-    const agregado = this.favoritosService.alternarFavorito(idLibro);
-    this.notifications.show(
-      agregado ? 'Añadido a tus favoritos.' : 'Eliminado de tus favoritos.',
-      'info',
-      2200
-    );
-  }
-
   private actualizarParametros(cambios: Record<string, string | null>): void {
     void this.router.navigate(['/catalog'], {
       queryParams: cambios,
       queryParamsHandling: 'merge',
-      replaceUrl: true
+      replaceUrl: true,
     });
   }
 }

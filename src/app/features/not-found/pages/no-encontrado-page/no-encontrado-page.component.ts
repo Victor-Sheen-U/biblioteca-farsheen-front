@@ -6,7 +6,7 @@ import { Router, RouterLink } from '@angular/router';
   standalone: true,
   imports: [RouterLink],
   templateUrl: './no-encontrado-page.component.html',
-  styleUrl: './no-encontrado-page.component.scss'
+  styleUrl: './no-encontrado-page.component.scss',
 })
 export class NoEncontradoPageComponent {
   private readonly router = inject(Router);

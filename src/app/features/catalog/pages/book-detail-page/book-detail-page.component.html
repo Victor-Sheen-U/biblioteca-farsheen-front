@@ -1,7 +1,8 @@
 <section class="book-detail page-container" aria-labelledby="book-detail-title">
   <div class="book-detail__nav">
     <button type="button" class="book-detail__back-btn" (click)="volverAlCatalogo()">
-      ← Volver al catálogo
+      <app-icon name="chevron-left" [size]="16" />
+      <span>Volver al catálogo</span>
     </button>
   </div>
 
@@ -9,9 +10,7 @@
     <div class="book-detail__skeleton" aria-live="polite"></div>
   } @else if (noEncontrado() || !libro()) {
     <div class="book-detail__not-found" role="alert" data-testid="book-not-found">
-      <h1 id="book-detail-title" class="book-detail__not-found-title">
-        Libro no encontrado
-      </h1>
+      <h1 id="book-detail-title" class="book-detail__not-found-title">Libro no encontrado</h1>
       <p class="book-detail__not-found-desc">
         El título solicitado no existe en el catálogo o se encuentra inhabilitado actualmente.
       </p>
@@ -34,15 +33,6 @@
       <div class="book-detail__info">
         <div class="book-detail__top-row">
           <app-badge [text]="item.nombreGenero" variant="primary" />
-          <button
-            type="button"
-            class="book-detail__fav-btn"
-            [class.book-detail__fav-btn--active]="esFavorito()"
-            [attr.aria-pressed]="esFavorito()"
-            (click)="onAlternarFavorito()"
-          >
-            <span>{{ esFavorito() ? '♥ En mis favoritos' : '♡ Guardar en favoritos' }}</span>
-          </button>
         </div>
 
         <h1 id="book-detail-title" class="book-detail__title">{{ item.titulo }}</h1>
@@ -85,27 +75,64 @@
                 </span>
               } @else {
                 <span class="book-detail__avail book-detail__avail--warn">
-                  0 disponibles en este instante (puedes consultar fechas futuras)
+                  0 disponibles en este instante
                 </span>
               }
             </dd>
           </div>
         </dl>
 
-        <div class="book-detail__actions">
-          <app-button
-            variant="primary"
-            size="lg"
-            (clicked)="onPedirPrestado()"
-          >
-            Pedir prestado (Reservar por rango de fechas)
-          </app-button>
+        <!-- Consulta de disponibilidad por fecha y hora (RFN8) -->
+        <div class="book-detail__avail-box">
+          <label for="detail-avail-dt" class="book-detail__avail-label">
+            <app-icon name="calendar" [size]="15" />
+            <span>Consultar disponibilidad por fecha y hora</span>
+          </label>
+          <div class="book-detail__avail-row">
+            <input
+              id="detail-avail-dt"
+              type="datetime-local"
+              class="book-detail__avail-input"
+              [ngModel]="fechaConsulta()"
+              (ngModelChange)="fechaConsulta.set($event)"
+            />
+            <app-button
+              variant="outline"
+              size="sm"
+              [disabled]="consultandoDisp()"
+              (clicked)="onConsultarDisponibilidad()"
+            >
+              {{ consultandoDisp() ? 'Consultando…' : 'Consultar' }}
+            </app-button>
+          </div>
 
-          <app-button
-            variant="outline"
-            size="lg"
-            (clicked)="volverAlCatalogo()"
-          >
+          @if (disponibilidadFecha(); as disp) {
+            <p
+              class="book-detail__avail-result"
+              [class.book-detail__avail-result--ok]="disp.disponible"
+              aria-live="polite"
+            >
+              @if (disp.disponible) {
+                Hay {{ disp.ejemplaresDisponibles }}
+                {{
+                  disp.ejemplaresDisponibles === 1
+                    ? 'ejemplar disponible'
+                    : 'ejemplares disponibles'
+                }}
+                para esa fecha.
+              } @else {
+                Sin ejemplares disponibles en esa fecha y hora.
+              }
+            </p>
+          } @else if (errorDisp(); as err) {
+            <p class="book-detail__avail-error" role="alert">{{ err }}</p>
+          }
+        </div>
+
+        <div class="book-detail__actions">
+          <app-button variant="primary" size="lg" (clicked)="onReservar()"> Reservar </app-button>
+
+          <app-button variant="outline" size="lg" (clicked)="volverAlCatalogo()">
             Volver al catálogo
           </app-button>
         </div>

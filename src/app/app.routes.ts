@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard, authMatchGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { roleGuard } from './core/guards/role.guard';
 import { MainLayoutComponent } from './shared/ui/templates/main-layout/main-layout.component';
 
 export const routes: Routes = [
@@ -11,65 +12,106 @@ export const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        title: 'Inicio · BiblioTech',
+        title: 'Inicio · Biblioteca farsheen',
         loadComponent: () =>
           import('./features/home/pages/home-page/home-page.component').then(
-            (m) => m.HomePageComponent
-          )
+            (m) => m.HomePageComponent,
+          ),
       },
       {
         path: 'login',
         canActivate: [guestGuard],
-        title: 'Iniciar sesión · BiblioTech',
+        title: 'Iniciar sesión · Biblioteca farsheen',
         loadComponent: () =>
           import('./features/auth/pages/login-page/login-page.component').then(
-            (m) => m.LoginPageComponent
-          )
+            (m) => m.LoginPageComponent,
+          ),
       },
       {
         path: 'register',
         redirectTo: () => '/login?modo=registro',
-        pathMatch: 'full'
+        pathMatch: 'full',
       },
       {
         path: 'catalog',
-        title: 'Catálogo · BiblioTech',
+        title: 'Catálogo · Biblioteca farsheen',
         loadComponent: () =>
           import('./features/catalog/pages/catalog-page/catalog-page.component').then(
-            (m) => m.CatalogPageComponent
-          )
+            (m) => m.CatalogPageComponent,
+          ),
       },
       {
         path: 'catalog/:id',
-        title: 'Detalle del libro · BiblioTech',
+        title: 'Detalle del libro · Biblioteca farsheen',
         loadComponent: () =>
           import('./features/catalog/pages/book-detail-page/book-detail-page.component').then(
-            (m) => m.BookDetailPageComponent
-          )
+            (m) => m.BookDetailPageComponent,
+          ),
       },
       {
         path: 'book/:id',
         redirectTo: (route) => `/catalog/${route.params['id']}`,
-        pathMatch: 'full'
+        pathMatch: 'full',
+      },
+      {
+        path: 'reservas',
+        canMatch: [authMatchGuard],
+        canActivate: [authGuard],
+        title: 'Mis reservas · Biblioteca farsheen',
+        loadComponent: () =>
+          import('./features/loans/pages/loans-page/loans-page.component').then(
+            (m) => m.LoansPageComponent,
+          ),
       },
       {
         path: 'loans',
+        redirectTo: () => '/reservas',
+        pathMatch: 'full',
+      },
+      {
+        path: 'admin',
         canMatch: [authMatchGuard],
-        canActivate: [authGuard],
-        title: 'Mis préstamos · BiblioTech',
-        loadComponent: () =>
-          import('./features/loans/pages/loans-page/loans-page.component').then(
-            (m) => m.LoansPageComponent
-          )
+        canActivate: [authGuard, roleGuard(['ADMIN'])],
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: 'libros',
+          },
+          {
+            path: 'libros',
+            title: 'Administrar libros · Biblioteca farsheen',
+            loadComponent: () =>
+              import('./features/admin/pages/admin-libros-page/admin-libros-page.component').then(
+                (m) => m.AdminLibrosPageComponent,
+              ),
+          },
+          {
+            path: 'reservas',
+            title: 'Administrar reservas · Biblioteca farsheen',
+            loadComponent: () =>
+              import('./features/admin/pages/admin-reservas-page/admin-reservas-page.component').then(
+                (m) => m.AdminReservasPageComponent,
+              ),
+          },
+          {
+            path: 'usuarios',
+            title: 'Administrar usuarios · Biblioteca farsheen',
+            loadComponent: () =>
+              import('./features/admin/pages/admin-usuarios-page/admin-usuarios-page.component').then(
+                (m) => m.AdminUsuariosPageComponent,
+              ),
+          },
+        ],
       },
       {
         path: '**',
-        title: 'Página no encontrada · BiblioTech',
+        title: 'Página no encontrada · Biblioteca farsheen',
         loadComponent: () =>
           import('./features/not-found/pages/no-encontrado-page/no-encontrado-page.component').then(
-            (m) => m.NoEncontradoPageComponent
-          )
-      }
-    ]
-  }
+            (m) => m.NoEncontradoPageComponent,
+          ),
+      },
+    ],
+  },
 ];

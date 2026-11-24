@@ -146,7 +146,7 @@
           />
           @if (
             registroForm.controls.documentoIdentidad.touched &&
-            registroForm.controls.documentoIdentidad.errors;
+              registroForm.controls.documentoIdentidad.errors;
             as errs
           ) {
             <span class="auth-field__error" role="alert">
@@ -178,7 +178,7 @@
           />
           @if (
             registroForm.controls.nombreCompleto.touched &&
-            registroForm.controls.nombreCompleto.errors;
+              registroForm.controls.nombreCompleto.errors;
             as errs
           ) {
             <span class="auth-field__error" role="alert">
@@ -311,13 +311,9 @@
           />
           @if (registroForm.controls.confirmarPassword.touched) {
             @if (registroForm.controls.confirmarPassword.hasError('required')) {
-              <span class="auth-field__error" role="alert">
-                Debes confirmar tu contraseña.
-              </span>
+              <span class="auth-field__error" role="alert"> Debes confirmar tu contraseña. </span>
             } @else if (registroForm.hasError('passwordsNoCoinciden')) {
-              <span class="auth-field__error" role="alert">
-                Las contraseñas no coinciden.
-              </span>
+              <span class="auth-field__error" role="alert"> Las contraseñas no coinciden. </span>
             }
           }
         </div>

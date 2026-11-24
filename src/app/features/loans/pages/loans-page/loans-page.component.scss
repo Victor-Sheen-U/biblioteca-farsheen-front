@@ -357,3 +357,57 @@
     gap: 0.65rem;
   }
 }
+
+.loans-id-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+
+  &__label {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+
+  &__input {
+    width: 150px;
+    min-height: 38px;
+    padding: 0.35rem 0.65rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background-color: var(--surface-input);
+    color: var(--text);
+    font-size: var(--fs-sm);
+  }
+
+  &__clear {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--accent-text);
+  }
+}
+
+.loans-id-result {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  background-color: var(--primary-50);
+  border: 1px solid var(--primary-100);
+  font-size: var(--fs-sm);
+}
+
+.loans-id-error {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  background-color: var(--danger-50);
+  color: var(--danger-700);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}

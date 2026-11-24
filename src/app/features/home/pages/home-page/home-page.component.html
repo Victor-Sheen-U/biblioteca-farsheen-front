@@ -1,136 +1,219 @@
-<div class="home-page page-container">
-  <!-- Hero orientado al lector (F-20) -->
-  <section class="home-hero" aria-labelledby="home-hero-title">
-    <div class="home-hero__content">
-      <span class="home-hero__eyebrow">Colección abierta · Reserva en línea</span>
+<div class="home-page">
+  <!-- Banda Hero centrada estilo Apple -->
+  <section class="home-band home-band--hero" aria-labelledby="home-hero-title">
+    <div class="page-container home-hero">
+      <span class="home-hero__eyebrow">Biblioteca farsheen · Catálogo y reservas</span>
       <h1 id="home-hero-title" class="home-hero__title">
-        Tu próxima lectura académica o literaria, lista para reservar
+        Explora la colección y reserva tu próximo libro
       </h1>
       <p class="home-hero__subtitle">
-        Consulta en tiempo real la disponibilidad de ejemplares físicos, explora por género o autor
-        y programa tus préstamos eligiendo el rango exacto de fechas.
+        Consulta la disponibilidad real de ejemplares físicos por fecha y hora, explora por género o
+        autor y gestiona tus reservas en línea.
       </p>
 
-      <div class="home-hero__actions">
-        <a routerLink="/catalog" class="home-hero__btn home-hero__btn--primary">
-          Explorar catálogo
+      <form class="home-hero__search" role="search" (submit)="onBuscarHero($event)">
+        <app-icon name="search" [size]="18" />
+        <label for="home-hero-search-input" class="sr-only">
+          Buscar libros por título, autor, género o ISBN
+        </label>
+        <input
+          id="home-hero-search-input"
+          type="search"
+          class="home-hero__search-input"
+          placeholder="Buscar por título, autor, género o ISBN…"
+          [ngModel]="terminoHero()"
+          name="terminoHero"
+          (ngModelChange)="terminoHero.set($event)"
+        />
+        <button type="submit" class="home-hero__search-btn">Buscar</button>
+      </form>
+
+      <!-- Fila de iconos de acceso rápido (Anexo C) -->
+      <div class="home-quick-links" aria-label="Accesos rápidos">
+        <a routerLink="/catalog" class="home-quick-link">
+          <span class="home-quick-link__icon">
+            <app-icon name="book-open" [size]="22" />
+          </span>
+          <span class="home-quick-link__label">Catálogo</span>
         </a>
+
+        <a routerLink="/reservas" class="home-quick-link">
+          <span class="home-quick-link__icon">
+            <app-icon name="bookmark" [size]="22" />
+          </span>
+          <span class="home-quick-link__label">Mis reservas</span>
+        </a>
+
         @if (!authService.autenticado()) {
-          <a
-            [routerLink]="['/login']"
-            [queryParams]="{ modo: 'registro' }"
-            class="home-hero__btn home-hero__btn--outline"
-          >
-            Crear cuenta
+          <a routerLink="/login" class="home-quick-link">
+            <span class="home-quick-link__icon">
+              <app-icon name="user" [size]="22" />
+            </span>
+            <span class="home-quick-link__label">Mi cuenta</span>
+          </a>
+        } @else if (authService.rol() === 'ADMIN') {
+          <a routerLink="/admin" class="home-quick-link">
+            <span class="home-quick-link__icon">
+              <app-icon name="layout-dashboard" [size]="22" />
+            </span>
+            <span class="home-quick-link__label">Panel admin</span>
           </a>
         } @else {
-          <a routerLink="/loans" class="home-hero__btn home-hero__btn--outline">
-            Ver mis préstamos
+          <a routerLink="/reservas" class="home-quick-link">
+            <span class="home-quick-link__icon">
+              <app-icon name="user" [size]="22" />
+            </span>
+            <span class="home-quick-link__label">{{ authService.nombre() }}</span>
           </a>
         }
       </div>
-    </div>
 
-    <!-- Indicadores reales obtenidos de la API (R-4) -->
-    <div class="home-hero__stats" aria-label="Indicadores reales del catálogo">
-      <app-stat-chip
-        label="Títulos en catálogo"
-        [value]="catalogoService.estadisticas().totalTitulos"
-        variant="primary"
-      />
-      <app-stat-chip
-        label="Copias disponibles ahora"
-        [value]="catalogoService.estadisticas().copiasDisponiblesAhora"
-        variant="success"
-      />
-      <app-stat-chip
-        label="Ejemplares registrados"
-        [value]="catalogoService.estadisticas().totalEjemplares"
-        variant="neutral"
-      />
-      @if (authService.autenticado()) {
+      <!-- Indicadores reales obtenidos de la API -->
+      <div class="home-hero__stats" aria-label="Indicadores reales del catálogo">
         <app-stat-chip
-          label="Mis préstamos activos"
-          [value]="reservasService.conteoActivas()"
-          variant="warning"
+          label="Títulos en catálogo"
+          [value]="catalogoService.estadisticas().totalTitulos"
+          variant="primary"
         />
-      }
+        <app-stat-chip
+          label="Copias disponibles ahora"
+          [value]="catalogoService.estadisticas().copiasDisponiblesAhora"
+          variant="success"
+        />
+        <app-stat-chip
+          label="Ejemplares registrados"
+          [value]="catalogoService.estadisticas().totalEjemplares"
+          variant="neutral"
+        />
+        @if (authService.autenticado()) {
+          <app-stat-chip
+            label="Mis reservas activas"
+            [value]="reservasService.conteoActivas()"
+            variant="warning"
+          />
+        }
+      </div>
     </div>
   </section>
 
-  <!-- Estado de carga o error del catálogo -->
   @if (catalogoService.cargando()) {
-    <section class="home-section" aria-live="polite">
-      <div class="home-skeleton-grid">
-        @for (item of [1, 2, 3, 4, 5, 6, 7, 8]; track item) {
+    <section class="home-band" aria-live="polite">
+      <div class="page-container home-skeleton-grid">
+        @for (item of [1, 2, 3, 4]; track item) {
           <div class="home-skeleton-card"></div>
         }
       </div>
     </section>
   } @else if (catalogoService.error(); as mensajeError) {
-    <section class="home-state home-state--error" role="alert">
-      <h2>No pudimos conectar con el catálogo</h2>
-      <p>{{ mensajeError }}</p>
-      <app-button variant="primary" (clicked)="catalogoService.refrescar()">
-        Reintentar conexión
-      </app-button>
+    <section class="home-band" role="alert">
+      <div class="page-container home-state home-state--error">
+        <h2>No pudimos conectar con el catálogo</h2>
+        <p>{{ mensajeError }}</p>
+        <app-button variant="primary" (clicked)="catalogoService.refrescar()">
+          Reintentar conexión
+        </app-button>
+      </div>
     </section>
   } @else {
-    <!-- Explora por género (conteos reales) -->
-    @if (catalogoService.generosConConteo().length > 0) {
-      <section class="home-section" aria-labelledby="home-genres-title">
+    <!-- Banda 1: Novedades (últimos libros de la API) -->
+    <section class="home-band home-band--alt" aria-labelledby="home-novedades-title">
+      <div class="page-container home-section">
         <header class="home-section__header">
           <div>
-            <h2 id="home-genres-title" class="home-section__title">Explora por género</h2>
+            <h2 id="home-novedades-title" class="home-section__title">Novedades del catálogo</h2>
             <p class="home-section__subtitle">
-              Accede directamente a cada área temática con su número real de obras habilitadas.
+              Últimas obras registradas en la colección y su disponibilidad en tiempo real.
             </p>
           </div>
+
+          <a routerLink="/catalog" class="home-section__link">
+            Ver todo el catálogo ({{ catalogoService.estadisticas().totalTitulos }}) →
+          </a>
         </header>
 
-        <div class="genre-grid">
-          @for (genero of catalogoService.generosConConteo(); track genero.idGenero) {
-            <button
-              type="button"
-              class="genre-tile"
-              (click)="onExplorarGenero(genero.idGenero)"
-            >
-              <span class="genre-tile__name">{{ genero.nombreGenero }}</span>
-              <span class="genre-tile__count">
-                {{ genero.total === 1 ? '1 título' : genero.total + ' títulos' }}
-              </span>
-            </button>
-          }
+        <app-book-grid
+          [libros]="novedades()"
+          tituloVacio="Aún no hay títulos registrados"
+          descripcionVacia="Cuando el administrador registre libros, aparecerán aquí automáticamente."
+          textoAccionVacia="Ir al catálogo"
+          (reservar)="onReservar($event)"
+          (verDetalles)="onVerDetalleLibro($event)"
+          (limpiarFiltros)="irACatalogoCompleto()"
+        />
+      </div>
+    </section>
+
+    <!-- Banda 2: Géneros con conteo real -->
+    @if (catalogoService.generosConConteo().length > 0) {
+      <section class="home-band" aria-labelledby="home-genres-title">
+        <div class="page-container home-section">
+          <header class="home-section__header">
+            <div>
+              <h2 id="home-genres-title" class="home-section__title">Explora por género</h2>
+              <p class="home-section__subtitle">
+                Áreas temáticas con el conteo exacto de títulos habilitados.
+              </p>
+            </div>
+          </header>
+
+          <div class="genre-grid">
+            @for (genero of catalogoService.generosConConteo(); track genero.idGenero) {
+              <button type="button" class="genre-tile" (click)="onExplorarGenero(genero.idGenero)">
+                <span class="genre-tile__name">
+                  <app-icon name="tag" [size]="16" />
+                  <span>{{ genero.nombreGenero }}</span>
+                </span>
+                <span class="genre-tile__count">
+                  {{ genero.total === 1 ? '1 título' : genero.total + ' títulos' }}
+                </span>
+              </button>
+            }
+          </div>
         </div>
       </section>
     }
 
-    <!-- Disponibles ahora (primeros 8–12 libros con copias disponibles) -->
-    <section class="home-section" aria-labelledby="home-available-title">
-      <header class="home-section__header">
-        <div>
-          <h2 id="home-available-title" class="home-section__title">Disponibles ahora</h2>
-          <p class="home-section__subtitle">
-            Obras con ejemplares libres en este instante para préstamo inmediato.
-          </p>
+    <!-- Banda 3: Cómo reservar en 3 pasos -->
+    <section class="home-band home-band--alt" aria-labelledby="home-steps-title">
+      <div class="page-container home-section">
+        <header class="home-section__header">
+          <div>
+            <h2 id="home-steps-title" class="home-section__title">Cómo reservar en 3 pasos</h2>
+            <p class="home-section__subtitle">
+              Proceso directo conectado con el inventario físico de ejemplares.
+            </p>
+          </div>
+        </header>
+
+        <div class="steps-grid">
+          <article class="step-card">
+            <span class="step-card__icon"><app-icon name="search" [size]="20" /></span>
+            <h3 class="step-card__title">1. Busca tu libro</h3>
+            <p class="step-card__desc">
+              Filtra el catálogo por título, género, autor o disponibilidad inmediata sin necesidad
+              de iniciar sesión.
+            </p>
+          </article>
+
+          <article class="step-card">
+            <span class="step-card__icon"><app-icon name="calendar" [size]="20" /></span>
+            <h3 class="step-card__title">2. Verifica fechas y disponibilidad</h3>
+            <p class="step-card__desc">
+              Inicia sesión, elige tu rango de inicio y entrega y consulta si hay ejemplares físicos
+              libres en esa fecha.
+            </p>
+          </article>
+
+          <article class="step-card">
+            <span class="step-card__icon"><app-icon name="check-circle-2" [size]="20" /></span>
+            <h3 class="step-card__title">3. Confirma y gestiona</h3>
+            <p class="step-card__desc">
+              El sistema asigna automáticamente un ejemplar disponible y puedes cancelar hasta 24
+              horas antes del inicio.
+            </p>
+          </article>
         </div>
-
-        <a routerLink="/catalog" class="home-section__link">
-          Ver todo el catálogo ({{ catalogoService.estadisticas().totalTitulos }}) →
-        </a>
-      </header>
-
-      <app-book-grid
-        [libros]="catalogoService.disponiblesAhora()"
-        [favoritosIds]="favoritosService.favoritosIds()"
-        tituloVacio="No hay títulos disponibles en este instante"
-        descripcionVacia="Consulta el catálogo completo para revisar próximas devoluciones o reservar en fechas futuras."
-        textoAccionVacia="Ir al catálogo completo"
-        (pedirPrestado)="onPedirPrestado($event)"
-        (verDetalles)="onVerDetalleLibro($event)"
-        (alternarFavorito)="onAlternarFavorito($event)"
-        (limpiarFiltros)="irACatalogoCompleto()"
-      />
+      </div>
     </section>
   }
 </div>

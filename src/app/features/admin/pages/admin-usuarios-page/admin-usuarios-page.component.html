@@ -1,0 +1,153 @@
+<section class="admin-page page-container" aria-labelledby="admin-usuarios-title">
+  <header class="admin-header">
+    <div>
+      <h1 id="admin-usuarios-title" class="admin-header__title">Gestión de usuarios</h1>
+      <p class="admin-header__subtitle">
+        Consulta usuarios por ID o documento, crea cuentas con rol ADMIN/USUARIO y deshabilita
+        cuentas.
+      </p>
+    </div>
+
+    <app-button variant="primary" size="md" (clicked)="abrirModalCrear()">
+      <app-icon name="plus" [size]="16" />
+      <span>Crear usuario / admin</span>
+    </app-button>
+  </header>
+
+  <form class="admin-inline-create" (submit)="buscarUsuario($event)">
+    <select
+      aria-label="Tipo de búsqueda de usuario"
+      [ngModel]="tipoBusqueda()"
+      name="tipoBusqueda"
+      (ngModelChange)="tipoBusqueda.set($event)"
+      style="
+        min-height: 38px;
+        padding: 0.35rem 0.65rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        background: var(--surface-input);
+      "
+    >
+      <option value="documento">Por documento</option>
+      <option value="id">Por ID</option>
+    </select>
+    <input
+      type="search"
+      placeholder="Ingresa documento o ID…"
+      [ngModel]="terminoBusqueda()"
+      name="terminoBusqueda"
+      (ngModelChange)="terminoBusqueda.set($event)"
+    />
+    <app-button variant="primary" size="sm" type="submit" [disabled]="buscando()">
+      {{ buscando() ? 'Buscando…' : 'Buscar' }}
+    </app-button>
+  </form>
+
+  @if (errorBusqueda(); as err) {
+    <p class="admin-error" role="alert">{{ err }}</p>
+  }
+
+  @if (usuarioEncontrado(); as u) {
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Documento</th>
+            <th scope="col">Nombre y correo</th>
+            <th scope="col">Rol</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>#{{ u.idUsuario }}</td>
+            <td>{{ u.documentoIdentidad }}</td>
+            <td>
+              <strong>{{ u.nombreCompleto }}</strong>
+              <span class="admin-table__meta">{{ u.correo }}</span>
+            </td>
+            <td><app-badge [text]="u.rol" variant="primary" /></td>
+            <td>
+              <app-badge
+                [text]="u.estado ? 'ACTIVO' : 'DESHABILITADO'"
+                [variant]="u.estado ? 'success' : 'neutral'"
+              />
+            </td>
+            <td>
+              @if (u.estado) {
+                <button
+                  type="button"
+                  class="admin-btn admin-btn--danger"
+                  [disabled]="guardando()"
+                  (click)="deshabilitarEncontrado()"
+                >
+                  Deshabilitar cuenta
+                </button>
+              } @else {
+                <span class="admin-muted">Cuenta inactiva</span>
+              }
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (modalCrearAbierto()) {
+    <div class="admin-backdrop" (click)="!guardando() && modalCrearAbierto.set(false)">
+      <div class="admin-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <header class="admin-modal__header">
+          <h2>Crear usuario o administrador</h2>
+          <button
+            type="button"
+            class="admin-modal__close"
+            (click)="!guardando() && modalCrearAbierto.set(false)"
+          >
+            ✕
+          </button>
+        </header>
+
+        <form class="admin-form" [formGroup]="usuarioForm" (ngSubmit)="crearUsuario()">
+          <div class="admin-field">
+            <label for="adm-u-doc">Documento de identidad</label>
+            <input id="adm-u-doc" type="text" formControlName="documentoIdentidad" />
+          </div>
+          <div class="admin-field">
+            <label for="adm-u-nom">Nombre completo</label>
+            <input id="adm-u-nom" type="text" formControlName="nombreCompleto" />
+          </div>
+          <div class="admin-field">
+            <label for="adm-u-cor">Correo electrónico</label>
+            <input id="adm-u-cor" type="email" formControlName="correo" />
+          </div>
+          <div class="admin-field">
+            <label for="adm-u-pass">Contraseña (mín. 8 caracteres)</label>
+            <input id="adm-u-pass" type="password" formControlName="password" />
+          </div>
+          <div class="admin-field">
+            <label for="adm-u-rol">Rol</label>
+            <select id="adm-u-rol" formControlName="rol">
+              <option value="ADMIN">ADMIN</option>
+              <option value="USUARIO">USUARIO</option>
+            </select>
+          </div>
+
+          @if (errorCrear(); as errC) {
+            <p class="admin-error" role="alert">{{ errC }}</p>
+          }
+
+          <footer class="admin-modal__footer">
+            <app-button variant="outline" type="button" (clicked)="modalCrearAbierto.set(false)"
+              >Cancelar</app-button
+            >
+            <app-button variant="primary" type="submit" [disabled]="guardando()">
+              {{ guardando() ? 'Creando…' : 'Crear cuenta' }}
+            </app-button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  }
+</section>

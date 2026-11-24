@@ -1,10 +1,6 @@
 <div class="catalog-page page-container">
-  <!-- Backdrop móvil para el sidebar off-canvas (< 1024px) -->
   @if (uiState.sidebarCatalogoAbierto()) {
-    <div
-      class="catalog-sidebar-backdrop"
-      (click)="uiState.establecerSidebarCatalogo(false)"
-    ></div>
+    <div class="catalog-sidebar-backdrop" (click)="uiState.establecerSidebarCatalogo(false)"></div>
   }
 
   <div
@@ -22,11 +18,7 @@
         <h2 class="catalog-sidebar__heading">Filtros y búsqueda</h2>
         <div class="catalog-sidebar__top-actions">
           @if (chipsActivos().length > 0) {
-            <button
-              type="button"
-              class="catalog-sidebar__reset"
-              (click)="limpiarTodosLosFiltros()"
-            >
+            <button type="button" class="catalog-sidebar__reset" (click)="limpiarTodosLosFiltros()">
               Limpiar todo
             </button>
           }
@@ -43,9 +35,7 @@
 
       <!-- 1. Búsqueda difusa -->
       <div class="filter-group">
-        <label for="sidebar-fuzzy-input" class="filter-group__label">
-          Búsqueda inteligente
-        </label>
+        <label for="sidebar-fuzzy-input" class="filter-group__label"> Búsqueda inteligente </label>
         <input
           id="sidebar-fuzzy-input"
           type="search"
@@ -57,19 +47,8 @@
         />
       </div>
 
-      <!-- 2. Favoritos y Disponibilidad -->
+      <!-- 2. Disponibilidad -->
       <div class="filter-group filter-group--toggles">
-        <label class="toggle-row">
-          <input
-            type="checkbox"
-            [checked]="soloFavoritos()"
-            (change)="alternarSoloFavoritos($any($event.target).checked)"
-            data-testid="filter-favorites-checkbox"
-          />
-          <span class="toggle-row__text">Solo mis favoritos</span>
-          <span class="toggle-row__count">{{ favoritosService.totalFavoritos() }}</span>
-        </label>
-
         <label class="toggle-row">
           <input
             type="checkbox"
@@ -82,7 +61,7 @@
       </div>
 
       <!-- 3. Géneros literarios -->
-      <details class="filter-accordion" open>
+      <details id="filtro-generos" class="filter-accordion" open>
         <summary class="filter-accordion__summary">
           <span>Género literario</span>
           @if (generosSeleccionados().length > 0) {
@@ -105,7 +84,7 @@
       </details>
 
       <!-- 4. Autores con buscador interno -->
-      <details class="filter-accordion" open>
+      <details id="filtro-autores" class="filter-accordion" open>
         <summary class="filter-accordion__summary">
           <span>Autor</span>
           @if (autoresSeleccionados().length > 0) {
@@ -175,7 +154,8 @@
           </div>
           @if (rangoAniosActivo() && catalogoService.rangoAnios().sinAnio > 0) {
             <p class="year-range-note">
-              Se excluyen {{ catalogoService.rangoAnios().sinAnio }} títulos sin año de publicación registrado.
+              Se excluyen {{ catalogoService.rangoAnios().sinAnio }} títulos sin año de publicación
+              registrado.
             </p>
           }
         </div>
@@ -213,13 +193,16 @@
                 stroke-linecap="round"
               />
             </svg>
-            <span>{{ uiState.sidebarCatalogoAbierto() ? 'Ocultar filtros' : 'Mostrar filtros' }}</span>
+            <span>{{
+              uiState.sidebarCatalogoAbierto() ? 'Ocultar filtros' : 'Mostrar filtros'
+            }}</span>
           </button>
 
           <div class="catalog-toolbar__title-wrap">
             <h1 class="catalog-toolbar__title">Catálogo bibliográfico</h1>
             <p class="catalog-toolbar__counter" aria-live="polite" data-testid="catalog-counter">
-              Mostrando {{ librosFiltrados().length }} de {{ catalogoService.libros().length }} títulos
+              Mostrando {{ librosPaginados().length }} de {{ librosFiltrados().length }} títulos
+              (colección total: {{ catalogoService.libros().length }})
             </p>
           </div>
         </div>
@@ -243,7 +226,6 @@
         </div>
       </header>
 
-      <!-- Chips removibles de filtros activos -->
       @if (chipsActivos().length > 0) {
         <div class="active-chips" aria-label="Filtros aplicados">
           @for (chip of chipsActivos(); track chip.id) {
@@ -259,11 +241,7 @@
               </button>
             </span>
           }
-          <button
-            type="button"
-            class="active-chips__clear"
-            (click)="limpiarTodosLosFiltros()"
-          >
+          <button type="button" class="active-chips__clear" (click)="limpiarTodosLosFiltros()">
             Limpiar todos
           </button>
         </div>
@@ -285,13 +263,39 @@
         </div>
       } @else {
         <app-book-grid
-          [libros]="librosFiltrados()"
-          [favoritosIds]="favoritosService.favoritosIds()"
-          (pedirPrestado)="onPedirPrestado($event)"
+          [libros]="librosPaginados()"
+          (reservar)="onReservar($event)"
           (verDetalles)="onVerDetalle($event)"
-          (alternarFavorito)="onAlternarFavorito($event)"
           (limpiarFiltros)="limpiarTodosLosFiltros()"
         />
+
+        @if (totalPaginas() > 1) {
+          <nav class="catalog-pagination" aria-label="Paginación del catálogo">
+            <button
+              type="button"
+              class="catalog-pagination__btn"
+              [disabled]="paginaActual() <= 1"
+              (click)="irAPagina(paginaActual() - 1)"
+            >
+              <app-icon name="chevron-left" [size]="16" />
+              <span>Anterior</span>
+            </button>
+
+            <span class="catalog-pagination__info" data-testid="catalog-pagination-info">
+              Página {{ paginaActual() }} de {{ totalPaginas() }}
+            </span>
+
+            <button
+              type="button"
+              class="catalog-pagination__btn"
+              [disabled]="paginaActual() >= totalPaginas()"
+              (click)="irAPagina(paginaActual() + 1)"
+            >
+              <span>Siguiente</span>
+              <app-icon name="chevron-right" [size]="16" />
+            </button>
+          </nav>
+        }
       }
     </div>
   </div>

@@ -1,19 +1,11 @@
-import {
-  Component,
-  ElementRef,
-   computed,
-  effect,
-  inject,
-  input,
-  signal
-} from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, input, signal } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
   ReactiveFormsModule,
   ValidationErrors,
   ValidatorFn,
-  Validators
+  Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiError } from '../../../../core/models/api-error.model';
@@ -25,7 +17,7 @@ import { ButtonComponent } from '../../../../shared/ui/atoms/button/button.compo
 export type ModoAutenticacion = 'login' | 'registro';
 
 export const passwordsCoincidenValidator: ValidatorFn = (
-  group: AbstractControl
+  group: AbstractControl,
 ): ValidationErrors | null => {
   const pass = group.get('password')?.value ?? '';
   const confirm = group.get('confirmarPassword')?.value ?? '';
@@ -57,7 +49,7 @@ export function calcularFortalezaPassword(password: string): {
   standalone: true,
   imports: [ReactiveFormsModule, ButtonComponent],
   templateUrl: './login-page.component.html',
-  styleUrl: './login-page.component.scss'
+  styleUrl: './login-page.component.scss',
 })
 export class LoginPageComponent {
   private readonly fb = inject(FormBuilder);
@@ -78,32 +70,34 @@ export class LoginPageComponent {
   readonly passwordRegistroActual = signal<string>('');
 
   readonly fortalezaPassword = computed(() =>
-    calcularFortalezaPassword(this.passwordRegistroActual())
+    calcularFortalezaPassword(this.passwordRegistroActual()),
   );
 
   readonly loginForm = this.fb.nonNullable.group({
-    correo: ['', [Validators.required, Validators.email, Validators.maxLength(150)]],
-    password: ['', [Validators.required, Validators.maxLength(60)]]
+    correo: ['', [Validators.required, Validators.email, Validators.maxLength(120)]],
+    password: ['', [Validators.required, Validators.maxLength(60)]],
   });
 
   readonly registroForm = this.fb.nonNullable.group(
     {
       documentoIdentidad: [
         '',
-        [Validators.required, Validators.maxLength(20), Validators.pattern(/^\S+.*$/)]
+        [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(20),
+          Validators.pattern(/^[A-Za-z0-9._-]+$/),
+        ],
       ],
       nombreCompleto: [
         '',
-        [Validators.required, Validators.maxLength(150), Validators.pattern(/^\S+.*$/)]
+        [Validators.required, Validators.maxLength(150), Validators.pattern(/^\S+.*$/)],
       ],
-      correo: ['', [Validators.required, Validators.email, Validators.maxLength(150)]],
-      password: [
-        '',
-        [Validators.required, Validators.minLength(8), Validators.maxLength(60)]
-      ],
-      confirmarPassword: ['', [Validators.required]]
+      correo: ['', [Validators.required, Validators.email, Validators.maxLength(120)]],
+      password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(60)]],
+      confirmarPassword: ['', [Validators.required]],
     },
-    { validators: passwordsCoincidenValidator }
+    { validators: passwordsCoincidenValidator },
   );
 
   constructor() {
@@ -124,9 +118,9 @@ export class LoginPageComponent {
     void this.router.navigate(['/login'], {
       queryParams: {
         modo: nuevoModo === 'registro' ? 'registro' : null,
-        returnUrl: this.returnUrl() || null
+        returnUrl: this.returnUrl() || null,
       },
-      replaceUrl: true
+      replaceUrl: true,
     });
   }
 
@@ -163,10 +157,10 @@ export class LoginPageComponent {
           this.errorGeneral.set('Correo o contraseña incorrectos.');
         } else {
           this.errorGeneral.set(
-            err?.mensaje || 'No fue posible iniciar sesión. Intenta nuevamente.'
+            err?.mensaje || 'No fue posible iniciar sesión. Intenta nuevamente.',
           );
         }
-      }
+      },
     });
   }
 
@@ -190,14 +184,14 @@ export class LoginPageComponent {
         documentoIdentidad: valores.documentoIdentidad,
         nombreCompleto: valores.nombreCompleto,
         correo: valores.correo,
-        password: valores.password
+        password: valores.password,
       })
       .subscribe({
         next: () => {
           this.enviando.set(false);
           this.notifications.show(
             `Cuenta creada exitosamente. ¡Bienvenido, ${this.authService.nombre()}!`,
-            'success'
+            'success',
           );
           const destino = sanitizarReturnUrl(this.returnUrl());
           void this.router.navigateByUrl(destino);
@@ -205,7 +199,7 @@ export class LoginPageComponent {
         error: (err: Partial<ApiError>) => {
           this.enviando.set(false);
           this.mapearErroresRegistro(err);
-        }
+        },
       });
   }
 
@@ -250,7 +244,7 @@ export class LoginPageComponent {
   private enfocarPrimerCampoInvalido(): void {
     setTimeout(() => {
       const invalido = this.hostEl.nativeElement.querySelector<HTMLElement>(
-        'input.ng-invalid, select.ng-invalid'
+        'input.ng-invalid, select.ng-invalid',
       );
       invalido?.focus();
     }, 10);

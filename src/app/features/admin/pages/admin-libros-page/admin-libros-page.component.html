@@ -1,0 +1,313 @@
+<section class="admin-page page-container" aria-labelledby="admin-libros-title">
+  <header class="admin-header">
+    <div>
+      <h1 id="admin-libros-title" class="admin-header__title">Gestión de libros</h1>
+      <p class="admin-header__subtitle">
+        Crea, edita, consulta detalle histórico (RFN9), agrega ejemplares e inhabilita títulos.
+      </p>
+    </div>
+
+    <div class="admin-header__actions">
+      <input
+        type="search"
+        class="admin-search"
+        placeholder="Filtrar por título, ISBN o género…"
+        aria-label="Filtrar libros"
+        [ngModel]="filtro()"
+        (ngModelChange)="filtro.set($event)"
+      />
+      <app-button variant="primary" size="md" (clicked)="abrirCrearLibro()">
+        <app-icon name="plus" [size]="16" />
+        <span>Nuevo libro</span>
+      </app-button>
+    </div>
+  </header>
+
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Título e ISBN</th>
+          <th scope="col">Género</th>
+          <th scope="col">Ejemplares</th>
+          <th scope="col">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (libro of librosFiltrados(); track libro.idLibro) {
+          <tr [attr.data-admin-book-id]="libro.idLibro">
+            <td>#{{ libro.idLibro }}</td>
+            <td>
+              <strong>{{ libro.titulo }}</strong>
+              <span class="admin-table__meta">ISBN {{ libro.isbn }}</span>
+            </td>
+            <td><app-badge [text]="libro.nombreGenero" variant="primary" /></td>
+            <td>{{ libro.ejemplaresDisponibles }} / {{ libro.totalEjemplares }}</td>
+            <td>
+              <div class="admin-actions">
+                <button
+                  type="button"
+                  class="admin-btn"
+                  title="Editar libro"
+                  (click)="abrirEditarLibro(libro)"
+                >
+                  <app-icon name="pencil" [size]="15" />
+                  <span>Editar</span>
+                </button>
+                <button
+                  type="button"
+                  class="admin-btn"
+                  title="Gestionar ejemplares"
+                  (click)="abrirEjemplares(libro)"
+                >
+                  <app-icon name="book-open" [size]="15" />
+                  <span>Ejemplares</span>
+                </button>
+                <button
+                  type="button"
+                  class="admin-btn"
+                  title="Detalle histórico de reservas"
+                  (click)="abrirDetalle(libro)"
+                >
+                  <app-icon name="info" [size]="15" />
+                  <span>Detalle</span>
+                </button>
+                <button
+                  type="button"
+                  class="admin-btn admin-btn--danger"
+                  title="Inhabilitar libro"
+                  (click)="libroInhabilitar.set(libro)"
+                >
+                  <app-icon name="trash-2" [size]="15" />
+                  <span>Inhabilitar</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="admin-table__empty">
+              No hay libros que coincidan con el filtro.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal Crear / Editar Libro -->
+  @if (modalLibroAbierto()) {
+    <div class="admin-backdrop" (click)="cerrarModalLibro()">
+      <div class="admin-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <header class="admin-modal__header">
+          <h2>
+            {{ libroEditandoId() ? 'Editar libro #' + libroEditandoId() : 'Registrar nuevo libro' }}
+          </h2>
+          <button type="button" class="admin-modal__close" (click)="cerrarModalLibro()">✕</button>
+        </header>
+
+        <form class="admin-form" [formGroup]="libroForm" (ngSubmit)="guardarLibro()">
+          <div class="admin-field">
+            <label for="adm-isbn">ISBN</label>
+            <input id="adm-isbn" type="text" formControlName="isbn" placeholder="978-0132350884" />
+          </div>
+
+          <div class="admin-field">
+            <label for="adm-titulo">Título</label>
+            <input
+              id="adm-titulo"
+              type="text"
+              formControlName="titulo"
+              placeholder="Título de la obra"
+            />
+          </div>
+
+          <div class="admin-field">
+            <label for="adm-anio">Año de publicación (opcional)</label>
+            <input
+              id="adm-anio"
+              type="number"
+              min="1"
+              max="2100"
+              formControlName="anioPublicacion"
+            />
+          </div>
+
+          <div class="admin-field">
+            <label for="adm-genero">Género</label>
+            <select id="adm-genero" formControlName="idGenero">
+              <option [ngValue]="0" disabled>Selecciona un género…</option>
+              @for (g of generos(); track g.idGenero) {
+                <option [ngValue]="g.idGenero">{{ g.nombreGenero }}</option>
+              }
+            </select>
+            <div class="admin-inline-create">
+              <input
+                type="text"
+                placeholder="Nuevo género…"
+                [ngModel]="nuevoGeneroNombre()"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="nuevoGeneroNombre.set($event)"
+              />
+              <app-button variant="outline" size="sm" type="button" (clicked)="crearGeneroInline()">
+                + Crear género
+              </app-button>
+            </div>
+          </div>
+
+          <div class="admin-field">
+            <span class="admin-field__label"
+              >Autores ({{ autoresSeleccionados().length }} seleccionados)</span
+            >
+            <div class="admin-checks">
+              @for (a of autores(); track a.idAutor) {
+                <label class="admin-check">
+                  <input
+                    type="checkbox"
+                    [checked]="autoresSeleccionados().includes(a.idAutor)"
+                    (change)="alternarAutorForm(a.idAutor)"
+                  />
+                  <span>{{ a.nombreAutor }}</span>
+                </label>
+              }
+            </div>
+            <div class="admin-inline-create">
+              <input
+                type="text"
+                placeholder="Nuevo autor…"
+                [ngModel]="nuevoAutorNombre()"
+                [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="nuevoAutorNombre.set($event)"
+              />
+              <app-button variant="outline" size="sm" type="button" (clicked)="crearAutorInline()">
+                + Crear autor
+              </app-button>
+            </div>
+          </div>
+
+          @if (errorFormulario(); as err) {
+            <p class="admin-error" role="alert">{{ err }}</p>
+          }
+
+          <footer class="admin-modal__footer">
+            <app-button variant="outline" type="button" (clicked)="cerrarModalLibro()"
+              >Cancelar</app-button
+            >
+            <app-button variant="primary" type="submit" [disabled]="guardando()">
+              {{ guardando() ? 'Guardando…' : 'Guardar libro' }}
+            </app-button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Modal Ejemplares -->
+  @if (libroEjemplares(); as libroEj) {
+    <div class="admin-backdrop" (click)="libroEjemplares.set(null)">
+      <div class="admin-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <header class="admin-modal__header">
+          <h2>Ejemplares · {{ libroEj.titulo }}</h2>
+          <button type="button" class="admin-modal__close" (click)="libroEjemplares.set(null)">
+            ✕
+          </button>
+        </header>
+
+        <div class="admin-inline-create">
+          <input
+            type="number"
+            min="1"
+            max="50"
+            [ngModel]="cantidadEjemplares()"
+            (ngModelChange)="cantidadEjemplares.set($event)"
+            aria-label="Cantidad de ejemplares a agregar"
+          />
+          <app-button
+            variant="primary"
+            size="sm"
+            [disabled]="guardando()"
+            (clicked)="agregarEjemplares()"
+          >
+            Agregar ejemplares
+          </app-button>
+        </div>
+
+        @if (cargandoEjemplares()) {
+          <p class="admin-muted">Cargando ejemplares…</p>
+        } @else {
+          <ul class="admin-list">
+            @for (ej of ejemplaresLista(); track ej.idEjemplar) {
+              <li>Ejemplar #{{ ej.idEjemplar }} — {{ ej.estadoDisponibilidad }}</li>
+            } @empty {
+              <li class="admin-muted">Este libro no tiene ejemplares registrados.</li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Modal Detalle Técnico RFN9 -->
+  @if (cargandoDetalle() || detalleModal()) {
+    <div class="admin-backdrop" (click)="detalleModal.set(null); cargandoDetalle.set(false)">
+      <div class="admin-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <header class="admin-modal__header">
+          <h2>Detalle histórico (RFN9)</h2>
+          <button
+            type="button"
+            class="admin-modal__close"
+            (click)="detalleModal.set(null); cargandoDetalle.set(false)"
+          >
+            ✕
+          </button>
+        </header>
+
+        @if (cargandoDetalle()) {
+          <p class="admin-muted">Consultando detalle…</p>
+        } @else if (detalleModal(); as det) {
+          <p>
+            <strong>{{ det.libro.titulo }}</strong> · Total reservas históricas:
+            {{ det.totalReservas }}
+          </p>
+          <ul class="admin-list">
+            @for (r of det.reservas; track r.idReserva) {
+              <li>
+                #{{ r.idReserva }} · {{ r.nombreUsuario }} · Ejemplar #{{ r.idEjemplar }} ·
+                {{ r.fechaInicio | date: 'd MMM y' }} ({{ r.estadoReserva }})
+              </li>
+            } @empty {
+              <li class="admin-muted">Sin reservas registradas para este título.</li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Modal Confirmar Inhabilitación -->
+  @if (libroInhabilitar(); as objetivo) {
+    <div class="admin-backdrop" (click)="libroInhabilitar.set(null)">
+      <div
+        class="admin-modal admin-modal--sm"
+        role="dialog"
+        aria-modal="true"
+        (click)="$event.stopPropagation()"
+      >
+        <header class="admin-modal__header">
+          <h2>¿Inhabilitar libro?</h2>
+        </header>
+        <p class="admin-muted">
+          El libro <strong>«{{ objetivo.titulo }}»</strong> dejará de mostrarse en el catálogo
+          público (baja lógica).
+        </p>
+        <footer class="admin-modal__footer">
+          <app-button variant="outline" (clicked)="libroInhabilitar.set(null)">Cancelar</app-button>
+          <app-button variant="danger" [disabled]="guardando()" (clicked)="confirmarInhabilitar()">
+            Inhabilitar
+          </app-button>
+        </footer>
+      </div>
+    </div>
+  }
+</section>

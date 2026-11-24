@@ -5,13 +5,12 @@
 >
   <header class="loans-header">
     <div class="loans-header__left">
-      <button type="button" class="loans-header__back" (click)="volver()">
-        ← Volver
-      </button>
+      <button type="button" class="loans-header__back" (click)="volver()">← Volver</button>
       <div>
-        <h1 id="loans-page-title" class="loans-header__title">Mis Préstamos</h1>
+        <h1 id="loans-page-title" class="loans-header__title">Mis reservas</h1>
         <p class="loans-header__subtitle">
-          Gestiona tus reservas activas, revisa las fechas de entrega y consulta tu historial completo.
+          Gestiona tus reservas activas, consulta por código de referencia y revisa tu historial
+          completo.
         </p>
       </div>
     </div>
@@ -25,9 +24,7 @@
       >
         {{ reservasService.cargando() ? 'Actualizando…' : 'Actualizar' }}
       </app-button>
-      <a routerLink="/catalog" class="loans-header__catalog-cta">
-        Reservar otro libro
-      </a>
+      <a routerLink="/catalog" class="loans-header__catalog-cta"> Reservar otro libro </a>
     </div>
   </header>
 
@@ -60,13 +57,50 @@
     </div>
   </div>
 
-  <!-- Regla de negocio informativa -->
+  <!-- Consulta puntual por ID de reserva (RFN15) -->
+  <form class="loans-id-search" (submit)="buscarReservaPorId($event)">
+    <label for="reserva-id-lookup" class="loans-id-search__label">
+      Consultar reserva por ID:
+    </label>
+    <input
+      id="reserva-id-lookup"
+      type="number"
+      min="1"
+      class="loans-id-search__input"
+      placeholder="Ej. 15"
+      [ngModel]="idBusqueda()"
+      name="idBusqueda"
+      (ngModelChange)="idBusqueda.set($event)"
+    />
+    <app-button variant="outline" size="sm" type="submit" [disabled]="buscandoPorId()">
+      {{ buscandoPorId() ? 'Buscando…' : 'Buscar ID' }}
+    </app-button>
+    @if (resultadoPorId() || errorBusquedaId()) {
+      <button type="button" class="loans-id-search__clear" (click)="limpiarBusquedaId()">
+        Limpiar
+      </button>
+    }
+  </form>
+
+  @if (resultadoPorId(); as resId) {
+    <div class="loans-id-result" role="status">
+      <strong>Reserva #{{ resId.idReserva }}:</strong>
+      <span>{{ resId.tituloLibro }} (Ejemplar #{{ resId.idEjemplar }})</span>
+      <span
+        >· {{ resId.fechaInicio | date: 'd MMM y, h:mm a' }} →
+        {{ resId.fechaEntrega | date: 'd MMM y, h:mm a' }}</span
+      >
+      <app-badge [text]="resId.estadoReserva" [variant]="varianteEstado(resId.estadoReserva)" />
+    </div>
+  } @else if (errorBusquedaId(); as errId) {
+    <div class="loans-id-error" role="alert">{{ errId }}</div>
+  }
+
   <div class="loans-rule-banner" role="note">
     <strong>Política de cancelación:</strong> Puedes cancelar cualquier reserva activa hasta
     <strong>24 horas antes</strong> de su fecha y hora de inicio programada.
   </div>
 
-  <!-- Barra de filtros, búsqueda y ordenamiento -->
   <div class="loans-toolbar">
     <div class="loans-tabs" role="tablist" aria-label="Filtrar por estado de reserva">
       <button
@@ -115,13 +149,13 @@
       <input
         type="search"
         class="loans-toolbar__search"
-        placeholder="Filtrar por título del libro…"
-        aria-label="Filtrar préstamos por título del libro"
+        placeholder="Filtrar por título o ID…"
+        aria-label="Filtrar reservas por título o ID"
         [ngModel]="busquedaTitulo()"
         (ngModelChange)="busquedaTitulo.set($event)"
       />
 
-      <label for="loans-sort-select" class="sr-only">Ordenar préstamos</label>
+      <label for="loans-sort-select" class="sr-only">Ordenar reservas</label>
       <select
         id="loans-sort-select"
         class="loans-toolbar__select"
@@ -136,7 +170,6 @@
     </div>
   </div>
 
-  <!-- Contenido principal -->
   @if (reservasService.cargando()) {
     <div class="loans-skeleton-list" aria-live="polite">
       @for (i of [1, 2, 3]; track i) {
@@ -145,7 +178,7 @@
     </div>
   } @else if (reservasService.error(); as msgError) {
     <div class="loans-error" role="alert">
-      <h2>No pudimos cargar tus préstamos</h2>
+      <h2>No pudimos cargar tus reservas</h2>
       <p>{{ msgError }}</p>
       <app-button variant="primary" (clicked)="reservasService.cargarMisReservas()">
         Reintentar
@@ -153,7 +186,7 @@
     </div>
   } @else if (reservasFiltradas().length === 0) {
     <div class="loans-empty" data-testid="loans-page-empty">
-      <h2>No hay préstamos para mostrar</h2>
+      <h2>No hay reservas para mostrar</h2>
       <p>
         @if (reservasService.reservas().length === 0) {
           Aún no has registrado ninguna reserva en la biblioteca.
@@ -171,8 +204,8 @@
             <th scope="col">ID</th>
             <th scope="col">Libro y ejemplar</th>
             <th scope="col">Solicitud</th>
-            <th scope="col">Inicio del préstamo</th>
-            <th scope="col">Fecha de entrega</th>
+            <th scope="col">Inicio</th>
+            <th scope="col">Entrega</th>
             <th scope="col">Estado</th>
             <th scope="col">Acciones</th>
           </tr>
@@ -230,7 +263,6 @@
     </div>
   }
 
-  <!-- Diálogo de confirmación de cancelación -->
   @if (reservaPorCancelar(); as seleccion) {
     <div
       class="loans-confirm-backdrop"
