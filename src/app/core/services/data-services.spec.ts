@@ -5,14 +5,12 @@ import { environment } from '../../../environments/environment';
 import { AuthService, SESSION_STORAGE_KEY } from './auth.service';
 import { crearJwtPrueba } from './auth.service.spec';
 import { CatalogoService } from './catalogo.service';
-import { FavoritosService } from './favoritos.service';
 import { ReservasService, puedeCancelarReserva } from './reservas.service';
 
-describe('Servicios de datos: CatalogoService, ReservasService y FavoritosService', () => {
+describe('Servicios de datos: CatalogoService y ReservasService', () => {
   let httpMock: HttpTestingController;
   let catalogoService: CatalogoService;
   let reservasService: ReservasService;
-  let favoritosService: FavoritosService;
   let authService: AuthService;
 
   beforeEach(() => {
@@ -24,14 +22,12 @@ describe('Servicios de datos: CatalogoService, ReservasService y FavoritosServic
         AuthService,
         CatalogoService,
         ReservasService,
-        FavoritosService
-      ]
+      ],
     });
     httpMock = TestBed.inject(HttpTestingController);
     authService = TestBed.inject(AuthService);
     catalogoService = TestBed.inject(CatalogoService);
     reservasService = TestBed.inject(ReservasService);
-    favoritosService = TestBed.inject(FavoritosService);
   });
 
   afterEach(() => {
@@ -54,7 +50,7 @@ describe('Servicios de datos: CatalogoService, ReservasService y FavoritosServic
         autores: [{ idAutor: 100, nombreAutor: 'Gabriel García Márquez' }],
         anioPublicacion: 1967,
         totalEjemplares: 3,
-        ejemplaresDisponibles: 2
+        ejemplaresDisponibles: 2,
       },
       {
         idLibro: 2,
@@ -65,14 +61,14 @@ describe('Servicios de datos: CatalogoService, ReservasService y FavoritosServic
         autores: [{ idAutor: 100, nombreAutor: 'Gabriel García Márquez' }],
         anioPublicacion: 1985,
         totalEjemplares: 2,
-        ejemplaresDisponibles: 0
-      }
+        ejemplaresDisponibles: 0,
+      },
     ]);
 
     expect(catalogoService.estadisticas()).toEqual({
       totalTitulos: 2,
       copiasDisponiblesAhora: 2,
-      totalEjemplares: 5
+      totalEjemplares: 5,
     });
     expect(catalogoService.generosConConteo()[0].total).toBe(2);
     expect(catalogoService.autoresConConteo()[0].total).toBe(2);
@@ -83,50 +79,30 @@ describe('Servicios de datos: CatalogoService, ReservasService y FavoritosServic
   it('puedeCancelarReserva verifica estrictamente la regla de 24 horas antes de fechaInicio (RFN19)', () => {
     const ahora = new Date('2026-11-20T10:00:00').getTime();
 
-    // Faltan 25 horas -> se puede cancelar
     expect(
-      puedeCancelarReserva(
-        { estadoReserva: 'ACTIVA', fechaInicio: '2026-11-21T11:00:00' },
-        ahora
-      ).puede
+      puedeCancelarReserva({ estadoReserva: 'ACTIVA', fechaInicio: '2026-11-21T11:00:00' }, ahora)
+        .puede,
     ).toBe(true);
 
-    // Faltan exactamente 24 horas -> NO se puede cancelar
     expect(
-      puedeCancelarReserva(
-        { estadoReserva: 'ACTIVA', fechaInicio: '2026-11-21T10:00:00' },
-        ahora
-      ).puede
+      puedeCancelarReserva({ estadoReserva: 'ACTIVA', fechaInicio: '2026-11-21T10:00:00' }, ahora)
+        .puede,
     ).toBe(false);
 
-    // Faltan 12 horas -> NO se puede cancelar
     expect(
-      puedeCancelarReserva(
-        { estadoReserva: 'ACTIVA', fechaInicio: '2026-11-20T22:00:00' },
-        ahora
-      ).puede
+      puedeCancelarReserva({ estadoReserva: 'ACTIVA', fechaInicio: '2026-11-20T22:00:00' }, ahora)
+        .puede,
     ).toBe(false);
 
-    // Ya cancelada -> NO se puede cancelar
     expect(
       puedeCancelarReserva(
         { estadoReserva: 'CANCELADA', fechaInicio: '2026-11-25T10:00:00' },
-        ahora
-      ).puede
+        ahora,
+      ).puede,
     ).toBe(false);
   });
 
-  it('FavoritosService guarda en biblio.favoritos.anon y fusiona en biblio.favoritos.<correo> al iniciar sesión (D-4)', () => {
-    expect(favoritosService.esFavorito(7)).toBe(false);
-    favoritosService.alternarFavorito(7);
-    favoritosService.alternarFavorito(12);
-    expect(favoritosService.favoritosIds()).toEqual([7, 12]);
-    expect(localStorage.getItem('biblio.favoritos.anon')).toBe('[7,12]');
-
-    // Pre-cargar un favorito previo del usuario
-    localStorage.setItem('biblio.favoritos.ana@eam.edu.co', '[3,7]');
-
-    // Iniciar sesión como ana@eam.edu.co
+  it('ReservasService carga mis reservas al autenticarse y consulta reserva por ID (RFN15)', () => {
     const expFuturo = Math.floor((Date.now() + 3_600_000) / 1000);
     const token = crearJwtPrueba({ sub: 'ana@eam.edu.co', rol: 'USUARIO', exp: expFuturo });
     authService.login('ana@eam.edu.co', 'Clave123*').subscribe();
@@ -138,20 +114,34 @@ describe('Servicios de datos: CatalogoService, ReservasService y FavoritosServic
       expiraEnMs: 3_600_000,
       correo: 'ana@eam.edu.co',
       rol: 'USUARIO',
-      nombreCompleto: 'Ana'
+      nombreCompleto: 'Ana',
     });
 
-    // El effect de ReservasService dispara GET /reservas/mis-reservas al autenticarse
     TestBed.flushEffects();
     const reqReservas = httpMock.match(`${environment.apiUrl}/reservas/mis-reservas`);
     for (const r of reqReservas) {
       r.flush([]);
     }
 
-    expect(favoritosService.favoritosIds()).toEqual([3, 7, 12]);
-    expect(localStorage.getItem('biblio.favoritos.anon')).toBeNull();
-    expect(localStorage.getItem('biblio.favoritos.ana@eam.edu.co')).toBe('[3,7,12]');
     expect(reservasService.conteoActivas()).toBe(0);
     expect(localStorage.getItem(SESSION_STORAGE_KEY)).toBeTruthy();
+
+    reservasService.buscarPorId(42).subscribe((res) => {
+      expect(res.idReserva).toBe(42);
+    });
+    const reqById = httpMock.expectOne(`${environment.apiUrl}/reservas/42`);
+    expect(reqById.request.method).toBe('GET');
+    reqById.flush({
+      idReserva: 42,
+      idUsuario: 1,
+      nombreUsuario: 'Ana',
+      idEjemplar: 3,
+      idLibro: 1,
+      tituloLibro: 'Cien Años de Soledad',
+      fechaSolicitud: '2026-11-20T10:00:00',
+      fechaInicio: '2026-11-25T10:00:00',
+      fechaEntrega: '2026-11-28T10:00:00',
+      estadoReserva: 'ACTIVA',
+    });
   });
 });

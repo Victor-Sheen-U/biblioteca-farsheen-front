@@ -80,15 +80,10 @@ export function distanciaDamerauLevenshtein(a: string, b: string, maxDist = 2): 
       let val = Math.min(
         prevRow[j] + 1, // eliminación
         currRow[j - 1] + 1, // inserción
-        prevRow[j - 1] + cost // sustitución
+        prevRow[j - 1] + cost, // sustitución
       );
 
-      if (
-        i > 1 &&
-        j > 1 &&
-        charA === b.charCodeAt(j - 2) &&
-        a.charCodeAt(i - 2) === charB
-      ) {
+      if (i > 1 && j > 1 && charA === b.charCodeAt(j - 2) && a.charCodeAt(i - 2) === charB) {
         val = Math.min(val, prevPrevRow[j - 2] + 1); // transposición
       }
 
@@ -115,7 +110,7 @@ function puntuarTokenContraCampo(
   tokenQuery: string,
   textoCampo: string,
   tokensCampo: readonly string[],
-  peso: number
+  peso: number,
 ): number {
   if (!textoCampo || tokensCampo.length === 0) {
     return 0;
@@ -158,14 +153,14 @@ function puntuarTokenContraCampo(
  */
 export function buscarLibrosDifuso(
   libros: readonly LibroCatalogo[],
-  consultaRaw: string
+  consultaRaw: string,
 ): LibroCatalogo[] {
   return buscarLibrosConPuntaje(libros, consultaRaw).map((r) => r.libro);
 }
 
 export function buscarLibrosConPuntaje(
   libros: readonly LibroCatalogo[],
-  consultaRaw: string
+  consultaRaw: string,
 ): ResultadoBusquedaDifusa[] {
   if (!consultaRaw || !consultaRaw.trim()) {
     return libros.map((libro) => ({ libro, puntaje: 0 }));
@@ -195,7 +190,7 @@ export function buscarLibrosConPuntaje(
       const esExacto = isbnLibro === isbnConsulta || isbnRawNorm === queryRawLower;
       resultados.push({
         libro,
-        puntaje: (esExacto ? 120 : 95) * PESO_ISBN
+        puntaje: (esExacto ? 120 : 95) * PESO_ISBN,
       });
       continue;
     }
@@ -207,9 +202,7 @@ export function buscarLibrosConPuntaje(
     const tituloNorm = normalizarTextoBusqueda(libro.titulo);
     const tokensTitulo = tokenizarBusqueda(tituloNorm);
 
-    const autoresNorm = normalizarTextoBusqueda(
-      libro.autores.map((a) => a.nombreAutor).join(' ')
-    );
+    const autoresNorm = normalizarTextoBusqueda(libro.autores.map((a) => a.nombreAutor).join(' '));
     const tokensAutores = tokenizarBusqueda(autoresNorm);
 
     const generoNorm = normalizarTextoBusqueda(libro.nombreGenero);
@@ -232,8 +225,7 @@ export function buscarLibrosConPuntaje(
       const pTitulo = puntuarTokenContraCampo(token, tituloNorm, tokensTitulo, PESO_TITULO);
       const pAutor = puntuarTokenContraCampo(token, autoresNorm, tokensAutores, PESO_AUTOR);
       const pGenero = puntuarTokenContraCampo(token, generoNorm, tokensGenero, PESO_GENERO);
-      const pIsbn =
-        isbnLibro.includes(token) || isbnRawNorm.includes(token) ? 90 * PESO_ISBN : 0;
+      const pIsbn = isbnLibro.includes(token) || isbnRawNorm.includes(token) ? 90 * PESO_ISBN : 0;
 
       const mejorToken = Math.max(pTitulo, pAutor, pGenero, pIsbn);
       if (mejorToken <= 0) {

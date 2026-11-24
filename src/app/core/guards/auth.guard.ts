@@ -7,7 +7,7 @@ import {
   Router,
   RouterStateSnapshot,
   UrlSegment,
-  UrlTree
+  UrlTree,
 } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { sanitizarReturnUrl } from '../utils/return-url.util';
@@ -22,20 +22,20 @@ function evaluarAutenticacion(urlDestino: string): boolean | UrlTree {
 
   const returnUrl = sanitizarReturnUrl(urlDestino);
   return router.createUrlTree(['/login'], {
-    queryParams: { returnUrl }
+    queryParams: { returnUrl },
   });
 }
 
 export const authGuard: CanActivateFn = (
   _route: ActivatedRouteSnapshot,
-  state: RouterStateSnapshot
+  state: RouterStateSnapshot,
 ): boolean | UrlTree => {
   return evaluarAutenticacion(state.url);
 };
 
 export const authMatchGuard: CanMatchFn = (
   _route: Route,
-  segments: UrlSegment[]
+  segments: UrlSegment[],
 ): boolean | UrlTree => {
   const path = '/' + segments.map((s) => s.path).join('/');
   return evaluarAutenticacion(path);

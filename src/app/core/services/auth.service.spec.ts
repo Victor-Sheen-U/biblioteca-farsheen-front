@@ -23,7 +23,7 @@ describe('AuthService (F-5 / S-F2)', () => {
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), AuthService]
+      providers: [provideHttpClient(), provideHttpClientTesting(), AuthService],
     });
     service = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -51,7 +51,11 @@ describe('AuthService (F-5 / S-F2)', () => {
 
   it('realiza login contra POST /auth/login y persiste la sesión en localStorage', () => {
     const expFuturo = Math.floor((Date.now() + 7_200_000) / 1000);
-    const token = crearJwtPrueba({ sub: 'ana.gomez@biblioteca.com', rol: 'USUARIO', exp: expFuturo });
+    const token = crearJwtPrueba({
+      sub: 'ana.gomez@biblioteca.com',
+      rol: 'USUARIO',
+      exp: expFuturo,
+    });
 
     const mockResponse: AuthResponse = {
       token,
@@ -59,7 +63,7 @@ describe('AuthService (F-5 / S-F2)', () => {
       expiraEnMs: 7_200_000,
       correo: 'ana.gomez@biblioteca.com',
       rol: 'USUARIO',
-      nombreCompleto: 'Ana María Gómez'
+      nombreCompleto: 'Ana María Gómez',
     };
 
     service.login('Ana.Gomez@biblioteca.com ', 'Lectura2026*').subscribe((resp) => {
@@ -70,7 +74,7 @@ describe('AuthService (F-5 / S-F2)', () => {
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({
       correo: 'ana.gomez@biblioteca.com',
-      password: 'Lectura2026*'
+      password: 'Lectura2026*',
     });
     req.flush(mockResponse);
 
@@ -90,7 +94,7 @@ describe('AuthService (F-5 / S-F2)', () => {
       nombreCompleto: 'Carlos Restrepo',
       correo: 'nuevo@eam.edu.co',
       rol: 'USUARIO',
-      estado: true
+      estado: true,
     };
 
     const loginResp: AuthResponse = {
@@ -99,7 +103,7 @@ describe('AuthService (F-5 / S-F2)', () => {
       expiraEnMs: 7_200_000,
       correo: 'nuevo@eam.edu.co',
       rol: 'USUARIO',
-      nombreCompleto: 'Carlos Restrepo'
+      nombreCompleto: 'Carlos Restrepo',
     };
 
     service
@@ -107,7 +111,7 @@ describe('AuthService (F-5 / S-F2)', () => {
         documentoIdentidad: '1094999888',
         nombreCompleto: 'Carlos Restrepo',
         correo: 'nuevo@eam.edu.co',
-        password: 'Password123*'
+        password: 'Password123*',
       })
       .subscribe();
 
@@ -134,8 +138,8 @@ describe('AuthService (F-5 / S-F2)', () => {
         correo: 'ana@eam.edu.co',
         rol: 'USUARIO',
         nombreCompleto: 'Ana',
-        exp: expFuturo * 1000
-      })
+        exp: expFuturo * 1000,
+      }),
     );
 
     expect(service.verificarSesionActiva()).toBe(true);

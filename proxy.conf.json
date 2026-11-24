@@ -1,0 +1,7 @@
+{
+  "/biblioteca": {
+    "target": "http://localhost:10101",
+    "secure": false,
+    "changeOrigin": false
+  }
+}

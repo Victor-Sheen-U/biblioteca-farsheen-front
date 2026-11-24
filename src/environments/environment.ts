@@ -5,5 +5,5 @@ export interface EnvironmentConfig {
 
 export const environment: EnvironmentConfig = {
   production: true,
-  apiUrl: '/biblioteca/api/v1'
+  apiUrl: '/biblioteca/api/v1',
 };

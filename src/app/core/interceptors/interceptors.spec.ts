@@ -25,8 +25,8 @@ describe('authInterceptor & errorInterceptor (S-F3 / S-F4)', () => {
         provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
         provideHttpClientTesting(),
         AuthService,
-        NotificationService
-      ]
+        NotificationService,
+      ],
     });
 
     http = TestBed.inject(HttpClient);
@@ -52,8 +52,8 @@ describe('authInterceptor & errorInterceptor (S-F3 / S-F4)', () => {
         correo: 'ana@eam.edu.co',
         rol: 'USUARIO',
         nombreCompleto: 'Ana',
-        exp: expFuturo * 1000
-      })
+        exp: expFuturo * 1000,
+      }),
     );
     authService.verificarSesionActiva();
 
@@ -79,8 +79,8 @@ describe('authInterceptor & errorInterceptor (S-F3 / S-F4)', () => {
         correo: 'ana@eam.edu.co',
         rol: 'USUARIO',
         nombreCompleto: 'Ana',
-        exp: expFuturo * 1000
-      })
+        exp: expFuturo * 1000,
+      }),
     );
     authService.verificarSesionActiva();
 
@@ -89,13 +89,13 @@ describe('authInterceptor & errorInterceptor (S-F3 / S-F4)', () => {
     http.get(`${environment.apiUrl}/libros/1`).subscribe({
       error: (err: ApiError) => {
         errorCapturado403 = err;
-      }
+      },
     });
 
     const req403 = httpMock.expectOne(`${environment.apiUrl}/libros/1`);
     req403.flush(
       { message: 'Acceso denegado: no tiene permisos suficientes' },
-      { status: 403, statusText: 'Forbidden' }
+      { status: 403, statusText: 'Forbidden' },
     );
 
     expect(errorCapturado403?.status).toBe(403);
@@ -109,7 +109,7 @@ describe('authInterceptor & errorInterceptor (S-F3 / S-F4)', () => {
     http.get(`${environment.apiUrl}/reservas/mis-reservas`).subscribe({
       error: (err: ApiError) => {
         errorCapturado401 = err;
-      }
+      },
     });
 
     const req401 = httpMock.expectOne(`${environment.apiUrl}/reservas/mis-reservas`);

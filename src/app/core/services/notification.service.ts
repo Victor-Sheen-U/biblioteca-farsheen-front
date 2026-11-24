@@ -16,7 +16,7 @@ export class NotificationService {
     this._activeNotification.set({
       id: Math.random().toString(36).substring(2, 9),
       type,
-      text
+      text,
     });
 
     this.timeoutId = setTimeout(() => {

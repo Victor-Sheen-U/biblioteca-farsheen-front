@@ -21,12 +21,12 @@ const VEINTICUATRO_HORAS_MS = 24 * 60 * 60 * 1000;
  */
 export function puedeCancelarReserva(
   reserva: Pick<Reserva, 'estadoReserva' | 'fechaInicio'>,
-  ahoraMs: number = Date.now()
+  ahoraMs: number = Date.now(),
 ): EvaluacionCancelacion {
   if (reserva.estadoReserva !== 'ACTIVA') {
     return {
       puede: false,
-      motivo: `La reserva ya se encuentra en estado ${reserva.estadoReserva.toLowerCase()}.`
+      motivo: `La reserva ya se encuentra en estado ${reserva.estadoReserva.toLowerCase()}.`,
     };
   }
 
@@ -34,7 +34,7 @@ export function puedeCancelarReserva(
   if (Number.isNaN(inicioMs)) {
     return {
       puede: false,
-      motivo: 'Fecha de inicio inválida.'
+      motivo: 'Fecha de inicio inválida.',
     };
   }
 
@@ -42,7 +42,7 @@ export function puedeCancelarReserva(
   if (ahoraMs >= limiteCancelacionMs) {
     return {
       puede: false,
-      motivo: 'Solo se puede cancelar hasta 24 horas antes del inicio del préstamo.'
+      motivo: 'Solo se puede cancelar hasta 24 horas antes del inicio de la reserva.',
     };
   }
 
@@ -64,22 +64,22 @@ export class ReservasService {
   readonly error = this._error.asReadonly();
 
   readonly activas = computed<readonly Reserva[]>(() =>
-    this._reservas().filter((r) => r.estadoReserva === 'ACTIVA')
+    this._reservas().filter((r) => r.estadoReserva === 'ACTIVA'),
   );
 
   readonly finalizadas = computed<readonly Reserva[]>(() =>
-    this._reservas().filter((r) => r.estadoReserva === 'FINALIZADA')
+    this._reservas().filter((r) => r.estadoReserva === 'FINALIZADA'),
   );
 
   readonly canceladas = computed<readonly Reserva[]>(() =>
-    this._reservas().filter((r) => r.estadoReserva === 'CANCELADA')
+    this._reservas().filter((r) => r.estadoReserva === 'CANCELADA'),
   );
 
   readonly conteoActivas = computed<number>(() => this.activas().length);
 
   readonly proximaEntrega = computed<string | null>(() => {
     const activasOrdenadas = [...this.activas()].sort((a, b) =>
-      a.fechaEntrega.localeCompare(b.fechaEntrega)
+      a.fechaEntrega.localeCompare(b.fechaEntrega),
     );
     return activasOrdenadas.length > 0 ? activasOrdenadas[0].fechaEntrega : null;
   });
@@ -112,9 +112,9 @@ export class ReservasService {
         this._cargando.set(false);
       },
       error: (err: Partial<ApiError>) => {
-        this._error.set(err?.mensaje || 'No se pudieron consultar tus préstamos.');
+        this._error.set(err?.mensaje || 'No se pudieron consultar tus reservas.');
         this._cargando.set(false);
-      }
+      },
     });
   }
 
@@ -123,7 +123,7 @@ export class ReservasService {
       tap(() => {
         this.cargarMisReservas();
         this.catalogoService.refrescar();
-      })
+      }),
     );
   }
 
@@ -134,16 +134,19 @@ export class ReservasService {
         tap(() => {
           this.cargarMisReservas();
           this.catalogoService.refrescar();
-        })
+        }),
       );
+  }
+
+  buscarPorId(idReserva: number): Observable<Reserva> {
+    return this.http.get<Reserva>(`${environment.apiUrl}/reservas/${idReserva}`);
   }
 
   consultarDisponibilidad(idLibro: number, fechaHoraIso: string): Observable<Disponibilidad> {
     const params = new HttpParams().set('fechaHora', fechaHoraIso);
-    return this.http.get<Disponibilidad>(
-      `${environment.apiUrl}/libros/${idLibro}/disponibilidad`,
-      { params }
-    );
+    return this.http.get<Disponibilidad>(`${environment.apiUrl}/libros/${idLibro}/disponibilidad`, {
+      params,
+    });
   }
 
   evaluarCancelacion(reserva: Reserva, ahoraMs: number = Date.now()): EvaluacionCancelacion {

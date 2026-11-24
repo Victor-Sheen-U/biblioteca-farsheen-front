@@ -6,34 +6,33 @@ export interface EstiloPortadaLibro {
 
 const PALETAS_PORTADA: readonly { gradiente: string; acento: string }[] = [
   {
-    gradiente: 'linear-gradient(145deg, #2b1e5c 0%, #4b32a8 52%, #6746e5 100%)',
-    acento: '#c4b5fd'
+    gradiente: 'linear-gradient(145deg, #1E3A8A 0%, #1D4ED8 55%, #0284C7 100%)',
+    acento: '#BAE6FD',
   },
   {
-    gradiente: 'linear-gradient(145deg, #16324f 0%, #1d4e89 55%, #2a6f97 100%)',
-    acento: '#bae6fd'
+    gradiente: 'linear-gradient(145deg, #0F172A 0%, #1E293B 55%, #1E3A8A 100%)',
+    acento: '#E2E8F0',
   },
   {
-    gradiente: 'linear-gradient(145deg, #1b4332 0%, #2d6a4f 55%, #40916c 100%)',
-    acento: '#bbf7d0'
+    gradiente: 'linear-gradient(145deg, #064E3B 0%, #047857 55%, #0D9488 100%)',
+    acento: '#A7F3D0',
   },
   {
-    gradiente: 'linear-gradient(145deg, #4a154b 0%, #6f1d57 52%, #9d174d 100%)',
-    acento: '#fbcfe8'
+    gradiente: 'linear-gradient(145deg, #78350F 0%, #B45309 55%, #D97706 100%)',
+    acento: '#FDE68A',
   },
   {
-    gradiente: 'linear-gradient(145deg, #3b2314 0%, #6c3b1c 55%, #9a5827 100%)',
-    acento: '#fde68a'
+    gradiente: 'linear-gradient(145deg, #164E63 0%, #0E7490 55%, #0284C7 100%)',
+    acento: '#CFFAFE',
   },
   {
-    gradiente: 'linear-gradient(145deg, #1e293b 0%, #334155 55%, #4f46e5 100%)',
-    acento: '#c7d2fe'
-  }
+    gradiente: 'linear-gradient(145deg, #334155 0%, #475569 55%, #0284C7 100%)',
+    acento: '#E0F2FE',
+  },
 ];
 
 /**
- * Calcula una portada tipográfica determinista basada en idGenero y título (F-3 / §10.3).
- * No inventa imágenes externas ni metadatos inexistentes en la API.
+ * Calcula una portada tipográfica determinista basada en idGenero y título.
  */
 export function generarEstiloPortada(idGenero: number, titulo: string): EstiloPortadaLibro {
   let hash = Math.abs(idGenero || 0) * 31;
@@ -48,7 +47,7 @@ export function generarEstiloPortada(idGenero: number, titulo: string): EstiloPo
     .split(/\s+/)
     .filter((w) => w.length > 0);
 
-  let iniciales = 'LB';
+  let iniciales = 'BF';
   if (palabras.length >= 2) {
     iniciales = (palabras[0][0] + palabras[1][0]).toUpperCase();
   } else if (palabras.length === 1) {
@@ -58,6 +57,6 @@ export function generarEstiloPortada(idGenero: number, titulo: string): EstiloPo
   return {
     gradiente: paleta.gradiente,
     acento: paleta.acento,
-    iniciales
+    iniciales,
   };
 }

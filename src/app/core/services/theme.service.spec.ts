@@ -8,7 +8,7 @@ describe('ThemeService — Tema tri-estado (F-13 / D-10 / ref-1)', () => {
     localStorage.clear();
     document.documentElement.classList.remove('dark-theme');
     TestBed.configureTestingModule({
-      providers: [ThemeService]
+      providers: [ThemeService],
     });
     service = TestBed.inject(ThemeService);
   });
@@ -48,8 +48,8 @@ describe('ThemeService — Tema tri-estado (F-13 / D-10 / ref-1)', () => {
     window.dispatchEvent(
       new StorageEvent('storage', {
         key: THEME_STORAGE_KEY,
-        newValue: 'dark'
-      })
+        newValue: 'dark',
+      }),
     );
     expect(service.preferencia()).toBe('dark');
     expect(service.isDarkMode()).toBe(true);

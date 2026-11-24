@@ -1,3 +1,5 @@
+import { Reserva } from './reserva.model';
+
 export interface Autor {
   readonly idAutor: number;
   readonly nombreAutor: string;
@@ -19,6 +21,16 @@ export interface Libro {
   readonly estado: boolean;
 }
 
+export interface LibroCreate {
+  readonly isbn: string;
+  readonly titulo: string;
+  readonly idGenero: number;
+  readonly idsAutores: readonly number[];
+  readonly anioPublicacion?: number | null;
+}
+
+export type LibroUpdate = LibroCreate;
+
 export interface LibroCatalogo {
   readonly idLibro: number;
   readonly isbn: string;
@@ -36,4 +48,16 @@ export interface Disponibilidad {
   readonly fechaHora: string;
   readonly disponible: boolean;
   readonly ejemplaresDisponibles: number;
+}
+
+export interface Ejemplar {
+  readonly idEjemplar: number;
+  readonly idLibro: number;
+  readonly estadoDisponibilidad: string;
+}
+
+export interface LibroDetalle {
+  readonly libro: Libro;
+  readonly totalReservas: number;
+  readonly reservas: readonly Reserva[];
 }
