@@ -1,115 +1,45 @@
-# BiblioTech · Frontend de Biblioteca Universitaria (Angular 22)
+# Biblioteca farsheen · Frontend (Angular 22)
 
-Aplicación web frontend para el sistema de gestión y préstamo bibliográfico **BiblioTech**, construida con **Angular 22.2 (Zoneless + Signals)**, **TypeScript 6.0**, arquitectura **Atomic Design (`core / shared / features`)**, sistema de tema tri-estado (claro / neutro / oscuro) sin parpadeo inicial (anti-FOUC) e integración REST autenticada mediante **JWT (Bearer)** contra la API de Biblioteca (`http://localhost:10101/biblioteca/api/v1`).
+Aplicación web frontend para **Biblioteca farsheen**, construida con **Angular 22 (Zoneless + Signals)**, **Atomic Design (`core / shared/ui / features`)**, paleta oficial en `src/styles.scss`, tema tri-estado y comunicación HTTP REST + JWT con la API Spring Boot.
 
----
+## 1. Requisitos e inicio rápido
 
-## 1. Requisitos previos
-
-- **Node.js:** `>= 22.x` (incluye `fetch` nativo para el script de contrato `smoke-api.mjs`)
-- **npm:** `>= 10.x`
-- **API Backend en ejecución:** escuchando en `http://localhost:10101/biblioteca/api/v1` (por defecto en desarrollo)
-
----
-
-## 2. Instalación y ejecución
+- **Node.js `>= 22.x`** y **npm `>= 10.x`**
+- **Backend activo** en `http://localhost:10101/biblioteca/api/v1`
 
 ```bash
-# Instalar dependencias exactas desde package-lock.json
 npm ci
-
-# Iniciar el servidor de desarrollo en http://localhost:4200
-npm start
+npm start        # http://localhost:4200 (usa proxy.conf.json -> localhost:10101)
 ```
 
-### Configuración de entornos (`src/environments/`)
+## 2. Entornos y proxy
 
 | Archivo | Uso | `apiUrl` |
 |---|---|---|
-| `src/environments/environment.development.ts` | Desarrollo (`ng serve`, `ng test`) | `http://localhost:10101/biblioteca/api/v1` |
-| `src/environments/environment.ts` | Producción (`ng build`) | `/biblioteca/api/v1` (ruta relativa para proxy inverso, sin `localhost`) |
+| `proxy.conf.json` | Proxy dev `/biblioteca` → `http://localhost:10101` | — |
+| `src/environments/environment.development.ts` | Desarrollo (`ng serve`, `ng test`) | `/biblioteca/api/v1` |
+| `src/environments/environment.ts` | Producción (`ng build`) | `/biblioteca/api/v1` |
 
----
+## 3. Rutas principales
 
-## 3. Estructura de carpetas
+| Ruta | Acceso | Descripción |
+|---|---|---|
+| `/` | Pública | Inicio estilo Apple con buscador, novedades, géneros y guía en 3 pasos |
+| `/catalog` | Pública | Catálogo con filtros sincronizados, búsqueda difusa y paginación de 12 |
+| `/catalog/:id` | Pública | Detalle del libro, disponibilidad por fecha (RFN8) y reserva |
+| `/login` | Invitados (`guestGuard`) | Inicio de sesión y registro (`?modo=registro`, `?returnUrl=...`) |
+| `/reservas` | Autenticado (`authGuard`) | Mis reservas, consulta por ID (RFN15) y cancelación (> 24 h) |
+| `/admin/{libros,reservas,usuarios}` | Solo `ADMIN` (`roleGuard`) | Panel mínimo de administración (CRUD libros, ejemplares, reservas, usuarios) |
 
-```text
-src/
-├── environments/
-│   ├── environment.ts                   # Configuración de producción
-│   └── environment.development.ts       # Configuración local de desarrollo
-├── app/
-│   ├── core/                            # Capa transversal de dominio, seguridad y estado
-│   │   ├── config/
-│   │   │   └── site.config.ts           # Metadatos institucionales y enlaces del sitio
-│   │   ├── guards/
-│   │   │   ├── auth.guard.ts            # authGuard + authMatchGuard con returnUrl saneado
-│   │   │   ├── guest.guard.ts           # Redirige a '/' si ya existe sesión activa
-│   │   │   └── role.guard.ts            # Fábrica roleGuard(['USUARIO', 'ADMIN'])
-│   │   ├── interceptors/
-│   │   │   ├── auth.interceptor.ts      # Adjunta Bearer token solo hacia environment.apiUrl
-│   │   │   └── error.interceptor.ts     # Normaliza errores HTTP (401, 403, 0, 400, 500)
-│   │   ├── models/                      # Contratos TypeScript alineados con los DTOs REST
-│   │   ├── services/
-│   │   │   ├── auth.service.ts          # Sesión JWT, validación estructural + exp, multi-pestaña
-│   │   │   ├── catalogo.service.ts      # Estado reactivo de GET /catalogo y /catalogo/{id}
-│   │   │   ├── reservas.service.ts      # Préstamos, disponibilidad, cancelación (> 24 h)
-│   │   │   ├── favoritos.service.ts     # Favoritos por usuario + fusión anónimo -> autenticado
-│   │   │   ├── theme.service.ts         # Tema tri-estado ('dark' | 'light' | null)
-│   │   │   ├── ui-state.service.ts      # Estado del panel lateral, transición y diálogo
-│   │   │   └── notification.service.ts  # Alertas/toasts reactivos
-│   │   └── utils/
-│   │       ├── busqueda-difusa.ts       # Búsqueda difusa ponderada (NFD + Damerau-Levenshtein)
-│   │       ├── portada.ts               # Generador determinista de portadas tipográficas
-│   │       └── return-url.util.ts       # Saneado anti-Open Redirect (S-F5)
-│   │
-│   ├── shared/ui/                       # Jerarquía Atomic Design reutilizable
-│   │   ├── atoms/                       # badge, button, input, theme-toggle
-│   │   ├── molecules/                   # brand, book-card, search-bar, stat-chip, toast
-│   │   ├── organisms/                   # header, site-footer, book-grid, loan-drawer, reserva-dialog
-│   │   └── templates/                   # main-layout (header + theme-toggle + router-outlet + footer)
-│   │
-│   └── features/                        # Módulos funcionales cargados con lazy loading
-│       ├── home/pages/home-page/        # '/' — Portada pública con estadísticas y catálogo real
-│       ├── auth/pages/login-page/       # '/login' — Inicio de sesión y registro con pestañas
-│       ├── catalog/pages/
-│       │   ├── catalog-page/            # '/catalog' — Catálogo con sidebar desplegable y búsqueda difusa
-│       │   └── book-detail-page/        # '/catalog/:id' — Ficha técnica y disponibilidad por fecha
-│       ├── loans/pages/loans-page/      # '/loans' — Gestión completa de préstamos (protegida)
-│       └── not-found/pages/             # '**' — Página 404 personalizada
-```
+Redirects de compatibilidad: `/loans` → `/reservas`, `/register` → `/login?modo=registro`, `/book/:id` → `/catalog/:id`.
 
----
-
-## 4. Tabla de rutas
-
-| Ruta | Acceso | Guard | Descripción |
-|---|---|---|---|
-| `/` | Pública | — | Página de inicio pública con métricas reales de la API y vista previa del catálogo |
-| `/catalog` | Pública | — | Catálogo completo con sidebar desplegable, filtros por autor/género/año/favoritos y búsqueda difusa |
-| `/catalog/:id` | Pública | — | Detalle del libro, consulta de disponibilidad por fecha y solicitud de préstamo |
-| `/book/:id` | Pública | — | Redirección automática a `/catalog/:id` |
-| `/login` | Solo invitados | `guestGuard` | Inicio de sesión y registro en pestañas (`?modo=registro`, `?returnUrl=...`) |
-| `/register` | Solo invitados | — | Redirección a `/login?modo=registro` |
-| `/loans` | Autenticado (`USUARIO` / `ADMIN`) | `authMatchGuard`, `authGuard` | Página completa de préstamos con pestañas Activas / Finalizadas / Canceladas |
-| `**` | Pública | — | Página 404 («Esta página no existe en el catálogo») |
-
-> **Nota de seguridad:** La antigua ruta `/home` sin protección fue eliminada definitivamente (`S-F1`).
-
----
-
-## 5. Scripts de compilación y pruebas
+## 4. Comandos de verificación
 
 ```bash
-# Compilación de producción (verifica presupuestos y cero errores TypeScript/plantillas)
-npm run build
-
-# Pruebas unitarias con Vitest (45 pruebas en 9 suites)
-npx ng test --watch=false
-
-# Prueba de humo de contrato HTTP contra el backend en vivo (requiere backend en puerto 10101)
-API_URL=http://localhost:10101/biblioteca/api/v1 npm run smoke:api
-
-# Pruebas End-to-End (E2E) y verificación visual con Playwright
-npm run e2e
+npx ng test --watch=false   # Pruebas unitarias Vitest
+npx ng build                # Build de producción
+npm run e2e                 # Suite E2E en Chromium (Playwright)
+npm audit --omit=dev        # Auditoría de dependencias de producción
 ```
+
+Consulta [ARQUITECTURA_Y_COMUNICACION.md](ARQUITECTURA_Y_COMUNICACION.md) para los flujos de autenticación, reservas y seguridad en cliente.
