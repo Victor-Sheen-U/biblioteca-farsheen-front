@@ -6,7 +6,7 @@ import {
   RouterStateSnapshot,
   UrlSegment,
   UrlTree,
-  provideRouter
+  provideRouter,
 } from '@angular/router';
 import { AuthService, SESSION_STORAGE_KEY } from '../services/auth.service';
 import { crearJwtPrueba } from '../services/auth.service.spec';
@@ -24,8 +24,8 @@ describe('Guards de navegación (authGuard, guestGuard, roleGuard)', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         AuthService,
-        NotificationService
-      ]
+        NotificationService,
+      ],
     });
   });
 
@@ -33,20 +33,20 @@ describe('Guards de navegación (authGuard, guestGuard, roleGuard)', () => {
     localStorage.clear();
   });
 
-  it('authGuard y authMatchGuard redirigen a /login?returnUrl=/loans si no hay sesión', () => {
+  it('authGuard y authMatchGuard redirigen a /login?returnUrl=/reservas si no hay sesión', () => {
     const route = {} as ActivatedRouteSnapshot;
-    const state = { url: '/loans' } as RouterStateSnapshot;
+    const state = { url: '/reservas' } as RouterStateSnapshot;
 
     const resActivate = TestBed.runInInjectionContext(() => authGuard(route, state));
     expect(resActivate instanceof UrlTree).toBe(true);
-    expect((resActivate as UrlTree).toString()).toBe('/login?returnUrl=%2Floans');
+    expect((resActivate as UrlTree).toString()).toBe('/login?returnUrl=%2Freservas');
 
     const resMatch = TestBed.runInInjectionContext(() =>
       authMatchGuard(
-        { path: 'loans' },
-        [new UrlSegment('loans', {})],
-        {} as Parameters<typeof authMatchGuard>[2]
-      )
+        { path: 'reservas' },
+        [new UrlSegment('reservas', {})],
+        {} as Parameters<typeof authMatchGuard>[2],
+      ),
     );
     expect(resMatch instanceof UrlTree).toBe(true);
   });
@@ -61,8 +61,8 @@ describe('Guards de navegación (authGuard, guestGuard, roleGuard)', () => {
         correo: 'ana@eam.edu.co',
         rol: 'USUARIO',
         nombreCompleto: 'Ana',
-        exp: expFuturo * 1000
-      })
+        exp: expFuturo * 1000,
+      }),
     );
 
     const route = {} as ActivatedRouteSnapshot;
@@ -73,7 +73,7 @@ describe('Guards de navegación (authGuard, guestGuard, roleGuard)', () => {
 
   it('guestGuard permite entrar a /login a visitantes anónimos y redirige a "/" a usuarios con sesión', () => {
     const route = {
-      queryParamMap: { get: () => null }
+      queryParamMap: { get: () => null },
     } as unknown as ActivatedRouteSnapshot;
     const state = { url: '/login' } as RouterStateSnapshot;
 
@@ -88,8 +88,8 @@ describe('Guards de navegación (authGuard, guestGuard, roleGuard)', () => {
         correo: 'ana@eam.edu.co',
         rol: 'USUARIO',
         nombreCompleto: 'Ana',
-        exp: expFuturo * 1000
-      })
+        exp: expFuturo * 1000,
+      }),
     );
 
     const resConSesion = TestBed.runInInjectionContext(() => guestGuard(route, state));
@@ -107,8 +107,8 @@ describe('Guards de navegación (authGuard, guestGuard, roleGuard)', () => {
         correo: 'ana@eam.edu.co',
         rol: 'USUARIO',
         nombreCompleto: 'Ana',
-        exp: expFuturo * 1000
-      })
+        exp: expFuturo * 1000,
+      }),
     );
 
     const route = {} as ActivatedRouteSnapshot;

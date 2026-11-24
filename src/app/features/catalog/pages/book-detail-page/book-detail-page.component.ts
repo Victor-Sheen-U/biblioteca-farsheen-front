@@ -1,35 +1,34 @@
 import { Location } from '@angular/common';
-import {
-  Component,
-  computed,
-  effect,
-  inject,
-  input,
-  numberAttribute,
-  signal
-} from '@angular/core';
+import { Component, computed, effect, inject, input, numberAttribute, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LibroCatalogo } from '../../../../core/models/libro.model';
+import { ApiError } from '../../../../core/models/api-error.model';
+import { Disponibilidad, LibroCatalogo } from '../../../../core/models/libro.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import { CatalogoService } from '../../../../core/services/catalogo.service';
-import { FavoritosService } from '../../../../core/services/favoritos.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { ReservasService } from '../../../../core/services/reservas.service';
 import { UiStateService } from '../../../../core/services/ui-state.service';
 import { generarEstiloPortada } from '../../../../core/utils/portada';
 import { BadgeComponent } from '../../../../shared/ui/atoms/badge/badge.component';
 import { ButtonComponent } from '../../../../shared/ui/atoms/button/button.component';
+import { IconComponent } from '../../../../shared/ui/atoms/icon/icon.component';
+import {
+  formatearFechaIsoLocal,
+  normalizarDatetimeLocalAIso,
+} from '../../../../shared/ui/organisms/reserva-dialog/reserva-dialog.component';
 
 @Component({
   selector: 'app-book-detail-page',
   standalone: true,
-  imports: [RouterLink, BadgeComponent, ButtonComponent],
+  imports: [RouterLink, FormsModule, BadgeComponent, ButtonComponent, IconComponent],
   templateUrl: './book-detail-page.component.html',
-  styleUrl: './book-detail-page.component.scss'
+  styleUrl: './book-detail-page.component.scss',
 })
 export class BookDetailPageComponent {
   private readonly catalogoService = inject(CatalogoService);
-  readonly favoritosService = inject(FavoritosService);
-  private readonly authService = inject(AuthService);
+  private readonly reservasService = inject(ReservasService);
+  readonly authService = inject(AuthService);
   private readonly uiState = inject(UiStateService);
   private readonly notifications = inject(NotificationService);
   private readonly router = inject(Router);
@@ -41,21 +40,24 @@ export class BookDetailPageComponent {
   readonly cargando = signal<boolean>(true);
   readonly noEncontrado = signal<boolean>(false);
 
+  readonly fechaConsulta = signal<string>(this.fechaPorDefectoInput());
+  readonly consultandoDisp = signal<boolean>(false);
+  readonly disponibilidadFecha = signal<Disponibilidad | null>(null);
+  readonly errorDisp = signal<string | null>(null);
+
   readonly libro = computed<LibroCatalogo | null>(() => {
     const idActual = this.id();
     if (Number.isNaN(idActual) || idActual <= 0) {
       return null;
     }
-    const enLista = this.catalogoService
-      .libros()
-      .find((item) => item.idLibro === idActual);
+    const enLista = this.catalogoService.libros().find((item) => item.idLibro === idActual);
     return this.libroRemoto() ?? enLista ?? null;
   });
 
   readonly portada = computed(() => {
     const l = this.libro();
     if (!l) {
-      return generarEstiloPortada(1, 'LB');
+      return generarEstiloPortada(1, 'BF');
     }
     return generarEstiloPortada(l.idGenero, l.titulo);
   });
@@ -63,19 +65,17 @@ export class BookDetailPageComponent {
   readonly nombresAutores = computed<string>(() => {
     const l = this.libro();
     if (!l || l.autores.length === 0) {
-      return 'Autor institucional';
+      return 'Autor no registrado';
     }
     return l.autores.map((a) => a.nombreAutor).join(', ');
-  });
-
-  readonly esFavorito = computed<boolean>(() => {
-    const l = this.libro();
-    return l ? this.favoritosService.esFavorito(l.idLibro) : false;
   });
 
   constructor() {
     effect(() => {
       const idLibro = this.id();
+      this.disponibilidadFecha.set(null);
+      this.errorDisp.set(null);
+
       if (Number.isNaN(idLibro) || idLibro <= 0) {
         this.cargando.set(false);
         this.noEncontrado.set(true);
@@ -96,42 +96,60 @@ export class BookDetailPageComponent {
           this.libroRemoto.set(null);
           this.cargando.set(false);
           this.noEncontrado.set(true);
-        }
+        },
       });
     });
   }
 
-  onPedirPrestado(): void {
+  onConsultarDisponibilidad(): void {
+    const actual = this.libro();
+    if (!actual) return;
+
+    if (!this.authService.verificarSesionActiva()) {
+      this.notifications.show('Inicia sesión para consultar disponibilidad por fecha.', 'info');
+      void this.router.navigate(['/login'], {
+        queryParams: { returnUrl: `/catalog/${actual.idLibro}` },
+      });
+      return;
+    }
+
+    const iso = normalizarDatetimeLocalAIso(this.fechaConsulta());
+    if (!iso) {
+      this.errorDisp.set('Selecciona una fecha y hora válida.');
+      return;
+    }
+
+    this.consultandoDisp.set(true);
+    this.errorDisp.set(null);
+
+    this.reservasService.consultarDisponibilidad(actual.idLibro, iso).subscribe({
+      next: (res) => {
+        this.disponibilidadFecha.set(res);
+        this.consultandoDisp.set(false);
+      },
+      error: (err: Partial<ApiError>) => {
+        this.disponibilidadFecha.set(null);
+        this.errorDisp.set(err?.mensaje || 'No se pudo consultar la disponibilidad.');
+        this.consultandoDisp.set(false);
+      },
+    });
+  }
+
+  onReservar(): void {
     const actual = this.libro();
     if (!actual) {
       return;
     }
 
     if (!this.authService.verificarSesionActiva()) {
-      this.notifications.show(
-        'Inicia sesión para reservar un ejemplar de este libro.',
-        'info'
-      );
+      this.notifications.show('Inicia sesión para reservar un ejemplar de este libro.', 'info');
       void this.router.navigate(['/login'], {
-        queryParams: { returnUrl: `/catalog/${actual.idLibro}` }
+        queryParams: { returnUrl: `/catalog/${actual.idLibro}` },
       });
       return;
     }
 
     this.uiState.abrirModalReserva(actual);
-  }
-
-  onAlternarFavorito(): void {
-    const actual = this.libro();
-    if (!actual) {
-      return;
-    }
-    const agregado = this.favoritosService.alternarFavorito(actual.idLibro);
-    this.notifications.show(
-      agregado ? 'Libro guardado en tus favoritos.' : 'Libro eliminado de tus favoritos.',
-      'info',
-      2200
-    );
   }
 
   volverAlCatalogo(): void {
@@ -140,5 +158,11 @@ export class BookDetailPageComponent {
     } else {
       void this.router.navigate(['/catalog']);
     }
+  }
+
+  private fechaPorDefectoInput(): string {
+    const d = new Date(Date.now() + 26 * 60 * 60 * 1000);
+    d.setMinutes(0, 0, 0);
+    return formatearFechaIsoLocal(d).slice(0, 16);
   }
 }

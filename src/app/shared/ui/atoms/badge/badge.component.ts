@@ -6,7 +6,7 @@ export type BadgeVariant = 'primary' | 'success' | 'warning' | 'danger' | 'neutr
   selector: 'app-badge',
   standalone: true,
   templateUrl: './badge.component.html',
-  styleUrl: './badge.component.scss'
+  styleUrl: './badge.component.scss',
 })
 export class BadgeComponent {
   readonly text = input.required<string>();

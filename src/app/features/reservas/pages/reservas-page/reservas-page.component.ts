@@ -8,28 +8,24 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import {
   EvaluacionCancelacion,
   ReservasService,
-  puedeCancelarReserva
+  puedeCancelarReserva,
 } from '../../../../core/services/reservas.service';
 import { UiStateService } from '../../../../core/services/ui-state.service';
 import { BadgeComponent, BadgeVariant } from '../../../../shared/ui/atoms/badge/badge.component';
 import { ButtonComponent } from '../../../../shared/ui/atoms/button/button.component';
 import { StatChipComponent } from '../../../../shared/ui/molecules/stat-chip/stat-chip.component';
 
-export type FiltroEstadoPrestamo = 'TODAS' | EstadoReserva;
-export type OrdenPrestamos =
-  | 'inicio-desc'
-  | 'inicio-asc'
-  | 'entrega-asc'
-  | 'entrega-desc';
+export type FiltroEstadoReserva = 'TODAS' | EstadoReserva;
+export type OrdenReservas = 'inicio-desc' | 'inicio-asc' | 'entrega-asc' | 'entrega-desc';
 
 @Component({
-  selector: 'app-loans-page',
+  selector: 'app-reservas-page',
   standalone: true,
   imports: [DatePipe, FormsModule, RouterLink, BadgeComponent, ButtonComponent, StatChipComponent],
-  templateUrl: './loans-page.component.html',
-  styleUrl: './loans-page.component.scss'
+  templateUrl: './reservas-page.component.html',
+  styleUrl: './reservas-page.component.scss',
 })
-export class LoansPageComponent implements OnInit {
+export class ReservasPageComponent implements OnInit {
   readonly reservasService = inject(ReservasService);
   private readonly uiState = inject(UiStateService);
   private readonly notifications = inject(NotificationService);
@@ -37,11 +33,17 @@ export class LoansPageComponent implements OnInit {
   private readonly location = inject(Location);
 
   readonly vieneDeExpansion = signal<boolean>(false);
-  readonly filtroEstado = signal<FiltroEstadoPrestamo>('TODAS');
+  readonly filtroEstado = signal<FiltroEstadoReserva>('TODAS');
   readonly busquedaTitulo = signal<string>('');
-  readonly orden = signal<OrdenPrestamos>('inicio-desc');
+  readonly orden = signal<OrdenReservas>('inicio-desc');
   readonly reservaPorCancelar = signal<Reserva | null>(null);
   readonly cancelandoId = signal<number | null>(null);
+
+  /** Búsqueda puntual por ID de reserva (RFN15) */
+  readonly idBusqueda = signal<string>('');
+  readonly buscandoPorId = signal<boolean>(false);
+  readonly resultadoPorId = signal<Reserva | null>(null);
+  readonly errorBusquedaId = signal<string | null>(null);
 
   readonly reservasFiltradas = computed<readonly Reserva[]>(() => {
     const estado = this.filtroEstado();
@@ -52,7 +54,11 @@ export class LoansPageComponent implements OnInit {
       if (estado !== 'TODAS' && r.estadoReserva !== estado) {
         return false;
       }
-      if (termino && !r.tituloLibro.toLowerCase().includes(termino)) {
+      if (
+        termino &&
+        !r.tituloLibro.toLowerCase().includes(termino) &&
+        !String(r.idReserva).includes(termino)
+      ) {
         return false;
       }
       return true;
@@ -79,6 +85,37 @@ export class LoansPageComponent implements OnInit {
   ngOnInit(): void {
     this.vieneDeExpansion.set(this.uiState.consumirBanderaExpansion());
     this.reservasService.cargarMisReservas();
+  }
+
+  buscarReservaPorId(event: Event): void {
+    event.preventDefault();
+    const idNum = Number.parseInt(this.idBusqueda().trim(), 10);
+    if (!Number.isInteger(idNum) || idNum <= 0) {
+      this.errorBusquedaId.set('Ingresa un ID de reserva válido.');
+      this.resultadoPorId.set(null);
+      return;
+    }
+
+    this.buscandoPorId.set(true);
+    this.errorBusquedaId.set(null);
+    this.resultadoPorId.set(null);
+
+    this.reservasService.buscarPorId(idNum).subscribe({
+      next: (res) => {
+        this.resultadoPorId.set(res);
+        this.buscandoPorId.set(false);
+      },
+      error: (err: Partial<ApiError>) => {
+        this.errorBusquedaId.set(err?.mensaje || `No se encontró la reserva #${idNum}.`);
+        this.buscandoPorId.set(false);
+      },
+    });
+  }
+
+  limpiarBusquedaId(): void {
+    this.idBusqueda.set('');
+    this.resultadoPorId.set(null);
+    this.errorBusquedaId.set(null);
   }
 
   evaluarCancelacion(reserva: Reserva): EvaluacionCancelacion {
@@ -119,17 +156,14 @@ export class LoansPageComponent implements OnInit {
         this.reservaPorCancelar.set(null);
         this.notifications.show(
           `Reserva #${objetivo.idReserva} cancelada exitosamente.`,
-          'success'
+          'success',
         );
       },
       error: (err: Partial<ApiError>) => {
         this.cancelandoId.set(null);
         this.reservaPorCancelar.set(null);
-        this.notifications.show(
-          err?.mensaje || 'No se pudo cancelar la reserva.',
-          'error'
-        );
-      }
+        this.notifications.show(err?.mensaje || 'No se pudo cancelar la reserva.', 'error');
+      },
     });
   }
 

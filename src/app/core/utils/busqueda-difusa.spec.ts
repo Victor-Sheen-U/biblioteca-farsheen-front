@@ -3,7 +3,7 @@ import {
   buscarLibrosConPuntaje,
   buscarLibrosDifuso,
   distanciaDamerauLevenshtein,
-  normalizarTextoBusqueda
+  normalizarTextoBusqueda,
 } from './busqueda-difusa';
 
 const CATALOGO_PRUEBA: LibroCatalogo[] = [
@@ -16,7 +16,7 @@ const CATALOGO_PRUEBA: LibroCatalogo[] = [
     autores: [{ idAutor: 10, nombreAutor: 'Gabriel García Márquez' }],
     anioPublicacion: 1967,
     totalEjemplares: 3,
-    ejemplaresDisponibles: 2
+    ejemplaresDisponibles: 2,
   },
   {
     idLibro: 2,
@@ -27,7 +27,7 @@ const CATALOGO_PRUEBA: LibroCatalogo[] = [
     autores: [{ idAutor: 20, nombreAutor: 'Robert C. Martin' }],
     anioPublicacion: 2008,
     totalEjemplares: 4,
-    ejemplaresDisponibles: 1
+    ejemplaresDisponibles: 1,
   },
   {
     idLibro: 3,
@@ -38,8 +38,8 @@ const CATALOGO_PRUEBA: LibroCatalogo[] = [
     autores: [{ idAutor: 30, nombreAutor: 'Frank Herbert' }],
     anioPublicacion: 1965,
     totalEjemplares: 2,
-    ejemplaresDisponibles: 0
-  }
+    ejemplaresDisponibles: 0,
+  },
 ];
 
 describe('Búsqueda difusa ponderada (D-6 / §10.3)', () => {
@@ -91,7 +91,7 @@ describe('Búsqueda difusa ponderada (D-6 / §10.3)', () => {
   it('procesa 10 000 libros en un presupuesto razonable (sin bloquear la UI)', () => {
     const loteGrande: LibroCatalogo[] = Array.from({ length: 10000 }, (_, i) => ({
       ...CATALOGO_PRUEBA[i % CATALOGO_PRUEBA.length],
-      idLibro: i + 1
+      idLibro: i + 1,
     }));
 
     const inicio = performance.now();

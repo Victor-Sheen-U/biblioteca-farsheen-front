@@ -8,7 +8,7 @@ import {
   RegistroRequest,
   Rol,
   SesionActiva,
-  Usuario
+  Usuario,
 } from '../models/auth.model';
 
 export const SESSION_STORAGE_KEY = 'biblio.session';
@@ -40,7 +40,7 @@ export class AuthService {
   readonly rol = computed<Rol | null>(() => (this.autenticado() ? this._sesion()!.rol : null));
 
   readonly correo = computed<string | null>(() =>
-    this.autenticado() ? this._sesion()!.correo : null
+    this.autenticado() ? this._sesion()!.correo : null,
   );
 
   readonly nombre = computed<string>(() => {
@@ -79,7 +79,7 @@ export class AuthService {
   login(correo: string, password: string): Observable<AuthResponse> {
     const body: LoginRequest = {
       correo: correo.trim().toLowerCase(),
-      password
+      password,
     };
     return this.http
       .post<AuthResponse>(`${environment.apiUrl}/auth/login`, body)
@@ -91,21 +91,19 @@ export class AuthService {
       documentoIdentidad: datos.documentoIdentidad.trim(),
       nombreCompleto: datos.nombreCompleto.trim(),
       correo: datos.correo.trim().toLowerCase(),
-      password: datos.password
+      password: datos.password,
     };
-    return this.http
-      .post<Usuario>(`${environment.apiUrl}/auth/register`, payload)
-      .pipe(
-        switchMap((usuarioCreado) =>
-          this.login(payload.correo, payload.password).pipe(
-            tap((resp) => {
-              if (!resp.nombreCompleto && usuarioCreado?.nombreCompleto) {
-                this.actualizarNombreSesion(usuarioCreado.nombreCompleto);
-              }
-            })
-          )
-        )
-      );
+    return this.http.post<Usuario>(`${environment.apiUrl}/auth/register`, payload).pipe(
+      switchMap((usuarioCreado) =>
+        this.login(payload.correo, payload.password).pipe(
+          tap((resp) => {
+            if (!resp.nombreCompleto && usuarioCreado?.nombreCompleto) {
+              this.actualizarNombreSesion(usuarioCreado.nombreCompleto);
+            }
+          }),
+        ),
+      ),
+    );
   }
 
   logout(): void {
@@ -220,8 +218,7 @@ export class AuthService {
   private establecerSesionDesdeRespuesta(respuesta: AuthResponse): void {
     const payload = this.decodificarPayloadJwt(respuesta.token);
     const ahora = Date.now();
-    const expDesdeJwt =
-      payload && typeof payload.exp === 'number' ? payload.exp * 1000 : null;
+    const expDesdeJwt = payload && typeof payload.exp === 'number' ? payload.exp * 1000 : null;
     const expCalculado =
       expDesdeJwt ?? ahora + (respuesta.expiraEnMs > 0 ? respuesta.expiraEnMs : 7_200_000);
 
@@ -231,15 +228,14 @@ export class AuthService {
     }
 
     const rolNormalizado: Rol = respuesta.rol === 'ADMIN' ? 'ADMIN' : 'USUARIO';
-    const nombre =
-      respuesta.nombreCompleto?.trim() || respuesta.correo.split('@')[0] || 'Usuario';
+    const nombre = respuesta.nombreCompleto?.trim() || respuesta.correo.split('@')[0] || 'Usuario';
 
     const nuevaSesion: SesionActiva = {
       token: respuesta.token,
       correo: respuesta.correo.trim().toLowerCase(),
       rol: rolNormalizado,
       nombreCompleto: nombre,
-      exp: expCalculado
+      exp: expCalculado,
     };
 
     this._sesion.set(nuevaSesion);
@@ -254,7 +250,7 @@ export class AuthService {
     }
     const actualizada: SesionActiva = {
       ...actual,
-      nombreCompleto: nombreCompleto.trim()
+      nombreCompleto: nombreCompleto.trim(),
     };
     this._sesion.set(actualizada);
     this.guardarSesionStorage(actualizada);
@@ -296,7 +292,7 @@ export class AuthService {
           typeof parsed.nombreCompleto === 'string' && parsed.nombreCompleto.trim()
             ? parsed.nombreCompleto.trim()
             : parsed.correo.split('@')[0],
-        exp: parsed.exp
+        exp: parsed.exp,
       };
     } catch {
       return null;
@@ -335,9 +331,12 @@ export class AuthService {
       this.logout();
       return;
     }
-    this.expirationTimer = setTimeout(() => {
-      this.logout();
-    }, Math.min(restante, 2_147_483_647));
+    this.expirationTimer = setTimeout(
+      () => {
+        this.logout();
+      },
+      Math.min(restante, 2_147_483_647),
+    );
   }
 
   private cancelarTemporizador(): void {

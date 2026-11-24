@@ -12,17 +12,17 @@
     role="dialog"
     aria-modal="true"
     aria-labelledby="loan-drawer-title"
-    data-testid="loan-drawer-panel"
+    data-testid="reservas-drawer-panel"
     (transitionend)="onPanelTransitionEnd($event)"
   >
     <header class="loan-drawer__header">
       <div class="loan-drawer__title-group">
-        <h2 id="loan-drawer-title" class="loan-drawer__title">Mis Préstamos</h2>
+        <h2 id="loan-drawer-title" class="loan-drawer__title">Mis reservas</h2>
         <p class="loan-drawer__subtitle">
           {{
             reservasActivas().length === 1
-              ? '1 libro en posesión'
-              : reservasActivas().length + ' libros en posesión'
+              ? '1 reserva activa'
+              : reservasActivas().length + ' reservas activas'
           }}
         </p>
       </div>
@@ -31,9 +31,9 @@
         <button
           type="button"
           class="loan-drawer__expand-btn"
-          data-testid="loan-drawer-expand-btn"
-          title="Expandir a vista completa de préstamos"
-          aria-label="Expandir a vista completa de préstamos"
+          data-testid="reservas-drawer-expand-btn"
+          title="Expandir a vista completa de reservas"
+          aria-label="Expandir a vista completa de reservas"
           (click)="iniciarExpansion()"
         >
           <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -89,9 +89,10 @@
               />
             </svg>
           </div>
-          <h3 class="loan-drawer__empty-title">Aún no tienes libros en préstamo</h3>
+          <h3 class="loan-drawer__empty-title">Aún no tienes reservas activas</h3>
           <p class="loan-drawer__empty-desc">
-            Explora el catálogo para reservar ejemplares disponibles en el rango de fechas que necesites.
+            Explora el catálogo para reservar ejemplares disponibles en el rango de fechas que
+            necesites.
           </p>
           <app-button variant="primary" size="md" (clicked)="irCatalogo.emit()">
             Explorar catálogo
@@ -162,9 +163,7 @@
                       (click)="solicitarConfirmacionCancelar(reserva.idReserva)"
                     >
                       {{
-                        cancelandoId() === reserva.idReserva
-                          ? 'Cancelando…'
-                          : 'Cancelar reserva'
+                        cancelandoId() === reserva.idReserva ? 'Cancelando…' : 'Cancelar reserva'
                       }}
                     </button>
                     @if (!evalCancel.puede && evalCancel.motivo) {
@@ -180,12 +179,8 @@
     </div>
 
     <footer class="loan-drawer__footer">
-      <button
-        type="button"
-        class="loan-drawer__full-link"
-        (click)="iniciarExpansion()"
-      >
-        Ver historial completo de préstamos (activas, finalizadas y canceladas) →
+      <button type="button" class="loan-drawer__full-link" (click)="iniciarExpansion()">
+        Ver historial completo de reservas (activas, finalizadas y canceladas) →
       </button>
     </footer>
   </aside>

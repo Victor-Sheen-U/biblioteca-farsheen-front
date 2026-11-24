@@ -1,0 +1,15 @@
+<button
+  type="button"
+  class="a11y-card"
+  [class.a11y-card--active]="active()"
+  [attr.aria-pressed]="active()"
+  (click)="onToggle()"
+>
+  <span class="a11y-card__icon" aria-hidden="true">
+    <app-icon [name]="icon()" [size]="20" [strokeWidth]="1.9" />
+  </span>
+  <span class="a11y-card__label">{{ label() }}</span>
+  @if (stateText()) {
+    <span class="a11y-card__state">{{ stateText() }}</span>
+  }
+</button>

@@ -7,19 +7,28 @@ import {
   effect,
   input,
   output,
-  signal
+  signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Rol } from '../../../../core/models/auth.model';
+import { IconComponent } from '../../atoms/icon/icon.component';
+import { ThemeToggleComponent } from '../../atoms/theme-toggle/theme-toggle.component';
 import { BrandComponent } from '../../molecules/brand/brand.component';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, FormsModule, BrandComponent],
+  imports: [
+    RouterLink,
+    RouterLinkActive,
+    FormsModule,
+    BrandComponent,
+    IconComponent,
+    ThemeToggleComponent,
+  ],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss'
+  styleUrl: './header.component.scss',
 })
 export class HeaderComponent implements OnDestroy {
   readonly enInicio = input<boolean>(false);
@@ -28,22 +37,21 @@ export class HeaderComponent implements OnDestroy {
   readonly nombreUsuario = input<string>('');
   readonly correoUsuario = input<string | null>(null);
   readonly rolUsuario = input<Rol | null>(null);
-  readonly prestamosActivos = input<number>(0);
+  readonly reservasActivas = input<number>(0);
   readonly consultaInicial = input<string>('');
 
   readonly irInicio = output<void>();
   readonly buscar = output<string>();
   readonly cambioBusquedaVivo = output<string>();
-  readonly abrirBusquedaAvanzada = output<void>();
-  readonly abrirPrestamos = output<void>();
+  readonly abrirReservas = output<void>();
   readonly cerrarSesion = output<void>();
 
   @ViewChild('searchInput') searchInputRef?: ElementRef<HTMLInputElement>;
 
   readonly terminoBusqueda = signal<string>('');
+  readonly busquedaExpandida = signal<boolean>(false);
   readonly menuUsuarioAbierto = signal<boolean>(false);
   readonly menuMovilAbierto = signal<boolean>(false);
-  readonly busquedaMovilAbierta = signal<boolean>(false);
 
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -51,6 +59,9 @@ export class HeaderComponent implements OnDestroy {
     effect(() => {
       const valorExterno = this.consultaInicial();
       this.terminoBusqueda.set(valorExterno ?? '');
+      if (valorExterno) {
+        this.busquedaExpandida.set(true);
+      }
     });
   }
 
@@ -63,15 +74,9 @@ export class HeaderComponent implements OnDestroy {
   @HostListener('document:keydown', ['$event'])
   onDocumentKeydown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
-      if (this.menuUsuarioAbierto()) {
-        this.menuUsuarioAbierto.set(false);
-      }
-      if (this.menuMovilAbierto()) {
-        this.menuMovilAbierto.set(false);
-      }
-      if (this.busquedaMovilAbierta()) {
-        this.busquedaMovilAbierta.set(false);
-      }
+      this.menuUsuarioAbierto.set(false);
+      this.menuMovilAbierto.set(false);
+      this.busquedaExpandida.set(false);
       return;
     }
 
@@ -85,7 +90,7 @@ export class HeaderComponent implements OnDestroy {
         !target?.isContentEditable
       ) {
         event.preventDefault();
-        this.enfocarBuscador();
+        this.abrirBuscador();
       }
     }
   }
@@ -99,11 +104,29 @@ export class HeaderComponent implements OnDestroy {
     if (this.menuUsuarioAbierto() && !target.closest('.site-header__user-menu')) {
       this.menuUsuarioAbierto.set(false);
     }
+    if (
+      this.busquedaExpandida() &&
+      !this.terminoBusqueda() &&
+      !target.closest('.site-header__search-wrap')
+    ) {
+      this.busquedaExpandida.set(false);
+    }
   }
 
-  enfocarBuscador(): void {
-    this.searchInputRef?.nativeElement?.focus();
-    this.searchInputRef?.nativeElement?.select();
+  abrirBuscador(): void {
+    this.busquedaExpandida.set(true);
+    setTimeout(() => {
+      this.searchInputRef?.nativeElement?.focus();
+      this.searchInputRef?.nativeElement?.select();
+    }, 30);
+  }
+
+  alternarBuscador(): void {
+    if (this.busquedaExpandida() && !this.terminoBusqueda()) {
+      this.busquedaExpandida.set(false);
+    } else {
+      this.abrirBuscador();
+    }
   }
 
   onInputBusqueda(valor: string): void {
@@ -122,9 +145,8 @@ export class HeaderComponent implements OnDestroy {
     this.terminoBusqueda.set('');
     if (this.enCatalogo()) {
       this.cambioBusquedaVivo.emit('');
-    } else {
-      this.enfocarBuscador();
     }
+    this.searchInputRef?.nativeElement?.focus();
   }
 
   onSubmitBusqueda(event: Event): void {
@@ -134,19 +156,13 @@ export class HeaderComponent implements OnDestroy {
       this.debounceTimer = null;
     }
     this.buscar.emit(this.terminoBusqueda().trim());
-    this.busquedaMovilAbierta.set(false);
-  }
-
-  onClickBusquedaAvanzada(): void {
-    this.busquedaMovilAbierta.set(false);
     this.menuMovilAbierto.set(false);
-    this.abrirBusquedaAvanzada.emit();
   }
 
-  onClickMisPrestamos(): void {
+  onClickMisReservas(): void {
     this.menuMovilAbierto.set(false);
     this.menuUsuarioAbierto.set(false);
-    this.abrirPrestamos.emit();
+    this.abrirReservas.emit();
   }
 
   alternarMenuUsuario(): void {
@@ -155,17 +171,6 @@ export class HeaderComponent implements OnDestroy {
 
   alternarMenuMovil(): void {
     this.menuMovilAbierto.update((abierto) => !abierto);
-    if (this.menuMovilAbierto()) {
-      this.busquedaMovilAbierta.set(false);
-    }
-  }
-
-  alternarBusquedaMovil(): void {
-    this.busquedaMovilAbierta.update((abierta) => !abierta);
-    if (this.busquedaMovilAbierta()) {
-      this.menuMovilAbierto.set(false);
-      setTimeout(() => this.enfocarBuscador(), 50);
-    }
   }
 
   onConfirmarLogout(): void {

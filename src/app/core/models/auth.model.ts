@@ -12,6 +12,10 @@ export interface RegistroRequest {
   readonly password: string;
 }
 
+export interface UsuarioAdminCreate extends RegistroRequest {
+  readonly rol: Rol;
+}
+
 export interface AuthResponse {
   readonly token: string;
   readonly tipoToken: 'Bearer';

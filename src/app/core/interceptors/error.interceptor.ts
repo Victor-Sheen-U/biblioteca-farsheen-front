@@ -25,22 +25,18 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       if (!(error instanceof HttpErrorResponse)) {
         const fallback: ApiError = {
           status: -1,
-          mensaje: 'Ocurrió un error inesperado al procesar la solicitud.'
+          mensaje: 'Ocurrió un error inesperado al procesar la solicitud.',
         };
         return throwError(() => fallback);
       }
 
-      const esEndpointAuth =
-        req.url.includes('/auth/login') || req.url.includes('/auth/register');
-      const payload =extraerPayload(error.error);
+      const esEndpointAuth = req.url.includes('/auth/login') || req.url.includes('/auth/register');
+      const payload = extraerPayload(error.error);
 
-      let mensaje =
-        payload?.message ||
-         obtenerMensajePorDefecto(error.status);
+      let mensaje = payload?.message || obtenerMensajePorDefecto(error.status);
 
       if (error.status === 0) {
-        mensaje =
-          'No se pudo conectar con el servidor. Verifica que el backend esté activo.';
+        mensaje = 'No se pudo conectar con el servidor. Verifica que el backend esté activo.';
       } else if (error.status === 401 && !esEndpointAuth) {
         mensaje = 'Tu sesión expiró. Inicia sesión nuevamente para continuar.';
         if (!manejandoExpiracion) {
@@ -51,7 +47,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           if (!router.url.startsWith('/login')) {
             void router
               .navigate(['/login'], {
-                queryParams: urlActual !== '/' ? { returnUrl: urlActual } : undefined
+                queryParams: urlActual !== '/' ? { returnUrl: urlActual } : undefined,
               })
               .finally(() => {
                 manejandoExpiracion = false;
@@ -61,19 +57,18 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           }
         }
       } else if (error.status === 403) {
-        mensaje =
-          payload?.message || 'No tienes permiso para realizar esta operación.';
+        mensaje = payload?.message || 'No tienes permiso para realizar esta operación.';
         notifications.show(mensaje, 'error');
       }
 
       const normalizado: ApiError = {
         status: error.status,
         mensaje,
-        ...(payload?.details ? { detalles: payload.details } : {})
+        ...(payload?.details ? { detalles: payload.details } : {}),
       };
 
       return throwError(() => normalizado);
-    })
+    }),
   );
 };
 

@@ -57,7 +57,7 @@ export class CatalogoService {
       .map(([idGenero, info]) => ({
         idGenero,
         nombreGenero: info.nombreGenero,
-        total: info.total
+        total: info.total,
       }))
       .sort((a, b) => a.nombreGenero.localeCompare(b.nombreGenero, 'es'));
   });
@@ -78,7 +78,7 @@ export class CatalogoService {
       .map(([idAutor, info]) => ({
         idAutor,
         nombreAutor: info.nombreAutor,
-        total: info.total
+        total: info.total,
       }))
       .sort((a, b) => a.nombreAutor.localeCompare(b.nombreAutor, 'es'));
   });
@@ -116,14 +116,14 @@ export class CatalogoService {
     return {
       totalTitulos: lista.length,
       copiasDisponiblesAhora,
-      totalEjemplares
+      totalEjemplares,
     };
   });
 
   readonly disponiblesAhora = computed<readonly LibroCatalogo[]>(() =>
     this._libros()
       .filter((libro) => libro.ejemplaresDisponibles > 0)
-      .slice(0, 12)
+      .slice(0, 12),
   );
 
   cargarSiNecesario(): void {
@@ -143,11 +143,9 @@ export class CatalogoService {
         this._cargando.set(false);
       },
       error: (err: Partial<ApiError>) => {
-        this._error.set(
-          err?.mensaje || 'No se pudo cargar el catálogo de libros en este momento.'
-        );
+        this._error.set(err?.mensaje || 'No se pudo cargar el catálogo de libros en este momento.');
         this._cargando.set(false);
-      }
+      },
     });
   }
 
@@ -161,7 +159,7 @@ export class CatalogoService {
           copia[idx] = libroActualizado;
           this._libros.set(copia);
         }
-      })
+      }),
     );
   }
 }

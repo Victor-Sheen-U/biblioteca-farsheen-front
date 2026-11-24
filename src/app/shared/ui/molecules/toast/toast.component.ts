@@ -5,7 +5,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
   selector: 'app-toast',
   standalone: true,
   templateUrl: './toast.component.html',
-  styleUrl: './toast.component.scss'
+  styleUrl: './toast.component.scss',
 })
 export class ToastComponent {
   private readonly notificationService = inject(NotificationService);

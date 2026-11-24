@@ -1,0 +1,89 @@
+<section class="admin-page page-container" aria-labelledby="admin-reservas-title">
+  <header class="admin-header">
+    <div>
+      <h1 id="admin-reservas-title" class="admin-header__title">Gestión de reservas</h1>
+      <p class="admin-header__subtitle">
+        Lista global del sistema, filtro por ID de usuario y cancelación administrativa sin
+        restricción de 24 h.
+      </p>
+    </div>
+
+    <form class="admin-header__actions" (submit)="filtrarPorUsuario($event)">
+      <input
+        type="number"
+        min="1"
+        class="admin-search"
+        placeholder="Filtrar por ID usuario…"
+        aria-label="Filtrar reservas por ID de usuario"
+        [ngModel]="idUsuarioFiltro()"
+        name="idUsuarioFiltro"
+        (ngModelChange)="idUsuarioFiltro.set($event)"
+      />
+      <app-button variant="outline" size="sm" type="submit">Filtrar</app-button>
+      <app-button variant="ghost" size="sm" type="button" (clicked)="cargarTodas()"
+        >Todas</app-button
+      >
+    </form>
+  </header>
+
+  @if (error(); as err) {
+    <p class="admin-error" role="alert">{{ err }}</p>
+  }
+
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Usuario</th>
+          <th scope="col">Libro / Ejemplar</th>
+          <th scope="col">Rango</th>
+          <th scope="col">Estado</th>
+          <th scope="col">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of reservas(); track r.idReserva) {
+          <tr>
+            <td>#{{ r.idReserva }}</td>
+            <td>
+              <strong>{{ r.nombreUsuario }}</strong>
+              <span class="admin-table__meta">ID usuario #{{ r.idUsuario }}</span>
+            </td>
+            <td>
+              <strong>{{ r.tituloLibro }}</strong>
+              <span class="admin-table__meta">Ejemplar #{{ r.idEjemplar }}</span>
+            </td>
+            <td>
+              {{ r.fechaInicio | date: 'd MMM y, h:mm a' }} →
+              {{ r.fechaEntrega | date: 'd MMM y, h:mm a' }}
+            </td>
+            <td>
+              <app-badge [text]="r.estadoReserva" [variant]="varianteEstado(r.estadoReserva)" />
+            </td>
+            <td>
+              @if (r.estadoReserva === 'ACTIVA') {
+                <button
+                  type="button"
+                  class="admin-btn admin-btn--danger"
+                  [disabled]="cancelandoId() === r.idReserva"
+                  (click)="cancelarAdmin(r.idReserva)"
+                >
+                  {{ cancelandoId() === r.idReserva ? 'Cancelando…' : 'Cancelar (Admin)' }}
+                </button>
+              } @else {
+                <span class="admin-muted">—</span>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="admin-table__empty">
+              {{ cargando() ? 'Cargando reservas…' : 'No hay reservas para mostrar.' }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

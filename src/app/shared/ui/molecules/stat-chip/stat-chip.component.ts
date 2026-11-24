@@ -4,7 +4,7 @@ import { Component, input } from '@angular/core';
   selector: 'app-stat-chip',
   standalone: true,
   templateUrl: './stat-chip.component.html',
-  styleUrl: './stat-chip.component.scss'
+  styleUrl: './stat-chip.component.scss',
 })
 export class StatChipComponent {
   readonly label = input.required<string>();

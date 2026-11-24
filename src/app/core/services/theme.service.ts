@@ -15,7 +15,7 @@ export class ThemeService {
    * tanto 'light' como null (neutro inicial) renderizan el tema claro (D-10).
    */
   readonly temaEfectivo = computed<'dark' | 'light'>(() =>
-    this._preferencia() === 'dark' ? 'dark' : 'light'
+    this._preferencia() === 'dark' ? 'dark' : 'light',
   );
 
   readonly isDarkMode = computed<boolean>(() => this.temaEfectivo() === 'dark');
@@ -68,8 +68,7 @@ export class ThemeService {
    * - Si el tema efectivo actual es oscuro -> pasa a 'light'.
    */
   toggleTheme(): void {
-    const siguiente: 'dark' | 'light' =
-      this.temaEfectivo() === 'light' ? 'dark' : 'light';
+    const siguiente: 'dark' | 'light' = this.temaEfectivo() === 'light' ? 'dark' : 'light';
     this.establecerPreferencia(siguiente);
   }
 
@@ -106,7 +105,7 @@ export class ThemeService {
 
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) {
-      metaTheme.setAttribute('content', efectivo === 'dark' ? '#131314' : '#f8fafc');
+      metaTheme.setAttribute('content', efectivo === 'dark' ? '#0B1220' : '#1E3A8A');
     }
   }
 

@@ -19,7 +19,7 @@ export function roleGuard(rolesPermitidos: readonly Rol[]): CanActivateFn {
     if (!authService.verificarSesionActiva()) {
       const returnUrl = sanitizarReturnUrl(state.url);
       return router.createUrlTree(['/login'], {
-        queryParams: { returnUrl }
+        queryParams: { returnUrl },
       });
     }
 

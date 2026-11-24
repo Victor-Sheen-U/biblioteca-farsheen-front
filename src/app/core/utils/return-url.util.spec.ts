@@ -6,7 +6,7 @@ describe('sanitizarReturnUrl (S-F5 / Anexo 3)', () => {
     expect(sanitizarReturnUrl('/catalog?q=dune')).toBe('/catalog?q=dune');
     expect(sanitizarReturnUrl('/catalog/12')).toBe('/catalog/12');
     expect(sanitizarReturnUrl('/catalog?genero=1&disponibles=1')).toBe(
-      '/catalog?genero=1&disponibles=1'
+      '/catalog?genero=1&disponibles=1',
     );
   });
 
@@ -29,7 +29,7 @@ describe('sanitizarReturnUrl (S-F5 / Anexo 3)', () => {
       null,
       undefined,
       '/login',
-      '/register'
+      '/register',
     ];
 
     for (const vector of vectoresMaliciosos) {

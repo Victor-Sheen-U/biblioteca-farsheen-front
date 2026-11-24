@@ -1,11 +1,13 @@
 import { Component, input, output } from '@angular/core';
 import { SITE_CONFIG } from '../../../../core/config/site.config';
+import { IconComponent } from '../../atoms/icon/icon.component';
 
 @Component({
   selector: 'app-brand',
   standalone: true,
+  imports: [IconComponent],
   templateUrl: './brand.component.html',
-  styleUrl: './brand.component.scss'
+  styleUrl: './brand.component.scss',
 })
 export class BrandComponent {
   readonly enInicio = input<boolean>(false);

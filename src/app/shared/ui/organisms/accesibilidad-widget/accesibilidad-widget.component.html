@@ -1,0 +1,178 @@
+@if (!a11y.preferencias().widgetOculto && !a11y.panelAbierto()) {
+  <button
+    #triggerBtn
+    type="button"
+    class="a11y-fab"
+    [class.a11y-fab--right]="a11y.preferencias().posicionWidget === 'right'"
+    aria-label="Abrir menú de accesibilidad (CTRL+U)"
+    aria-haspopup="dialog"
+    [attr.aria-expanded]="a11y.panelAbierto()"
+    (click)="a11y.abrirPanel()"
+  >
+    <app-icon name="accessibility" [size]="24" [strokeWidth]="2" />
+    @if (a11y.conteoActivas() > 0) {
+      <span class="a11y-fab__badge" aria-hidden="true">{{ a11y.conteoActivas() }}</span>
+    }
+  </button>
+}
+
+@if (a11y.panelAbierto()) {
+  <div class="a11y-backdrop" aria-hidden="true" (click)="a11y.cerrarPanel()"></div>
+
+  <aside
+    #panelEl
+    class="a11y-panel"
+    [class.a11y-panel--right]="a11y.preferencias().posicionWidget === 'right'"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="a11y-panel-title"
+    (keydown)="onPanelKeydown($event)"
+  >
+    <header class="a11y-panel__header">
+      <div class="a11y-panel__title-wrap">
+        <span class="a11y-panel__logo" aria-hidden="true">
+          <app-icon name="accessibility" [size]="20" [strokeWidth]="2" />
+        </span>
+        <h2 id="a11y-panel-title" class="a11y-panel__title">
+          Menú de accesibilidad <span class="a11y-panel__shortcut">(CTRL+U)</span>
+        </h2>
+      </div>
+      <button
+        #closeBtn
+        type="button"
+        class="a11y-panel__close"
+        aria-label="Cerrar menú de accesibilidad"
+        (click)="a11y.cerrarPanel()"
+      >
+        <app-icon name="x" [size]="20" [strokeWidth]="2" />
+      </button>
+    </header>
+
+    <div class="a11y-panel__body">
+      <div class="a11y-panel__grid">
+        <app-a11y-toggle-card
+          icon="contrast"
+          label="Contraste +"
+          [stateText]="etiquetaContraste()"
+          [active]="a11y.preferencias().contraste !== 'normal'"
+          (toggled)="a11y.ciclarContraste()"
+        />
+
+        <app-a11y-toggle-card
+          icon="link"
+          label="Resaltar enlaces"
+          [active]="a11y.preferencias().resaltarEnlaces"
+          (toggled)="a11y.alternarResaltarEnlaces()"
+        />
+
+        <app-a11y-toggle-card
+          icon="type"
+          label="Agrandar texto"
+          [stateText]="etiquetaTamano()"
+          [active]="a11y.preferencias().tamanoTexto !== 100"
+          (toggled)="a11y.ciclarTamanoTexto()"
+        />
+
+        <app-a11y-toggle-card
+          icon="sliders"
+          label="Espaciado de texto"
+          [active]="a11y.preferencias().espaciadoTexto"
+          (toggled)="a11y.alternarEspaciadoTexto()"
+        />
+
+        <app-a11y-toggle-card
+          icon="align-left"
+          label="Altura de línea"
+          [stateText]="etiquetaAltura()"
+          [active]="a11y.preferencias().alturaLinea !== 1.5"
+          (toggled)="a11y.ciclarAlturaLinea()"
+        />
+
+        <app-a11y-toggle-card
+          icon="align-left"
+          label="Texto alineado"
+          [stateText]="etiquetaAlineacion()"
+          [active]="a11y.preferencias().alineacionTexto !== 'left'"
+          (toggled)="a11y.ciclarAlineacionTexto()"
+        />
+
+        <app-a11y-toggle-card
+          icon="book-open"
+          label="Fuente dislexia"
+          [active]="a11y.preferencias().fuenteDislexia"
+          (toggled)="a11y.alternarFuenteDislexia()"
+        />
+
+        <app-a11y-toggle-card
+          icon="pause-circle"
+          label="Detener animaciones"
+          [active]="a11y.preferencias().detenerAnimaciones"
+          (toggled)="a11y.alternarDetenerAnimaciones()"
+        />
+
+        <app-a11y-toggle-card
+          icon="image-off"
+          label="Ocultar imágenes"
+          [active]="a11y.preferencias().ocultarImagenes"
+          (toggled)="a11y.alternarOcultarImagenes()"
+        />
+
+        <app-a11y-toggle-card
+          icon="mouse-pointer"
+          label="Cursor grande"
+          [active]="a11y.preferencias().cursorGrande"
+          (toggled)="a11y.alternarCursorGrande()"
+        />
+
+        <app-a11y-toggle-card
+          icon="sparkles"
+          label="Saturación"
+          [stateText]="etiquetaSaturacion()"
+          [active]="a11y.preferencias().saturacion !== 'normal'"
+          (toggled)="a11y.ciclarSaturacion()"
+        />
+      </div>
+
+      <div class="a11y-panel__actions">
+        <button
+          type="button"
+          class="a11y-action-btn a11y-action-btn--reset"
+          (click)="a11y.restablecerTodo()"
+        >
+          <app-icon name="rotate-ccw" [size]="18" />
+          <span>Restablecer todas las configuraciones</span>
+        </button>
+
+        <div class="a11y-panel__split-actions">
+          <button type="button" class="a11y-action-btn" (click)="a11y.alternarPosicionWidget()">
+            <app-icon name="move-horizontal" [size]="17" />
+            <span>
+              {{
+                a11y.preferencias().posicionWidget === 'left'
+                  ? 'Mover a la derecha'
+                  : 'Mover a la izquierda'
+              }}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="a11y-action-btn"
+            [attr.aria-pressed]="a11y.preferencias().widgetOculto"
+            (click)="a11y.alternarOcultarWidget()"
+          >
+            <app-icon name="eye-off" [size]="17" />
+            <span>{{ a11y.preferencias().widgetOculto ? 'Mostrar botón' : 'Ocultar widget' }}</span>
+          </button>
+        </div>
+
+        <p class="a11y-panel__hint">
+          Si ocultas el botón, ábrelo con <strong>CTRL+U</strong> o desde «Accesibilidad» en el pie
+          de página.
+        </p>
+      </div>
+    </div>
+  </aside>
+}
+
+<span class="sr-only" aria-live="polite" aria-atomic="true">{{ a11y.ultimoAnuncio() }}</span>

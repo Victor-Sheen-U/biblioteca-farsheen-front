@@ -102,7 +102,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease,
+      transform 0.18s ease;
 
     &:hover {
       background: rgba(15, 23, 42, 0.68);
