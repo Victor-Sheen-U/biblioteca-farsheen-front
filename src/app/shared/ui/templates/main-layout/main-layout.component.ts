@@ -13,8 +13,8 @@ import { UiStateService } from '../../../../core/services/ui-state.service';
 import { sanitizarReturnUrl } from '../../../../core/utils/return-url.util';
 import { ToastComponent } from '../../molecules/toast/toast.component';
 import { HeaderComponent } from '../../organisms/header/header.component';
-import { LoanDrawerComponent } from '../../organisms/loan-drawer/loan-drawer.component';
 import { ReservaDialogComponent } from '../../organisms/reserva-dialog/reserva-dialog.component';
+import { ReservasDrawerComponent } from '../../organisms/reservas-drawer/reservas-drawer.component';
 import { SiteFooterComponent } from '../../organisms/site-footer/site-footer.component';
 
 @Component({
@@ -26,7 +26,7 @@ import { SiteFooterComponent } from '../../organisms/site-footer/site-footer.com
     RouterLinkActive,
     HeaderComponent,
     SiteFooterComponent,
-    LoanDrawerComponent,
+    ReservasDrawerComponent,
     ReservaDialogComponent,
     ToastComponent,
   ],

@@ -17,8 +17,8 @@ flowchart LR
 
 ## 3. Módulos
 - **`core/`:** Contiene modelos TypeScript alineados con los DTOs REST, servicios singleton con estado en signals (`AuthService`, `CatalogoService`, `ReservasService`, `AdminLibrosService`, `AdminReservasService`, `AdminUsuariosService`, `ThemeService`, `UiStateService`, `NotificationService`), guards funcionales (`authGuard`, `guestGuard`, `roleGuard`), interceptores funcionales y utilidades (`busqueda-difusa.ts`, `return-url.util.ts`, `portada.ts`).
-- **`shared/ui/`:** Componentes reutilizables en cuatro niveles: átomos (`badge`, `button`, `icon`, `input`, `theme-toggle`), moléculas (`book-card`, `brand`, `search-bar`, `stat-chip`, `toast`), organismos (`header`, `site-footer`, `book-grid`, `loan-drawer`, `reserva-dialog`) y plantilla (`main-layout` con sub-barra contextual).
-- **`features/`:** Páginas con carga diferida (`loadComponent`): `home` (`/`), `catalog` (`/catalog`, `/catalog/:id` con paginación de 12 y disponibilidad), `loans` (`/reservas` con búsqueda por ID y cancelación > 24 h), `auth` (`/login`), `admin` (`/admin/{libros,reservas,usuarios}` solo rol `ADMIN`) y `not-found` (`**`).
+- **`shared/ui/`:** Componentes reutilizables en cuatro niveles: átomos (`badge`, `button`, `icon`, `input`, `theme-toggle`), moléculas (`book-card`, `brand`, `search-bar`, `stat-chip`, `toast`), organismos (`header`, `site-footer`, `book-grid`, `reservas-drawer`, `reserva-dialog`) y plantilla (`main-layout` con sub-barra contextual).
+- **`features/`:** Páginas con carga diferida (`loadComponent`): `home` (`/`), `catalog` (`/catalog`, `/catalog/:id` con paginación de 12 y disponibilidad), `reservas` (`/reservas` con búsqueda por ID y cancelación > 24 h), `auth` (`/login`), `admin` (`/admin/{libros,reservas,usuarios}` solo rol `ADMIN`) y `not-found` (`**`).
 
 ## 4. Seguridad en cliente y tema
 - CSP estricta en `index.html`, cero `innerHTML` o `bypassSecurityTrust*`, saneado estricto de `returnUrl` anti-Open Redirect, validación de `exp` y sincronización de logout entre pestañas mediante evento `storage`.

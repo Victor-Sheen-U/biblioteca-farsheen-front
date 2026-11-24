@@ -19,13 +19,13 @@ export type FiltroEstadoReserva = 'TODAS' | EstadoReserva;
 export type OrdenReservas = 'inicio-desc' | 'inicio-asc' | 'entrega-asc' | 'entrega-desc';
 
 @Component({
-  selector: 'app-loans-page',
+  selector: 'app-reservas-page',
   standalone: true,
   imports: [DatePipe, FormsModule, RouterLink, BadgeComponent, ButtonComponent, StatChipComponent],
-  templateUrl: './loans-page.component.html',
-  styleUrl: './loans-page.component.scss',
+  templateUrl: './reservas-page.component.html',
+  styleUrl: './reservas-page.component.scss',
 })
-export class LoansPageComponent implements OnInit {
+export class ReservasPageComponent implements OnInit {
   readonly reservasService = inject(ReservasService);
   private readonly uiState = inject(UiStateService);
   private readonly notifications = inject(NotificationService);

@@ -59,8 +59,8 @@ export const routes: Routes = [
         canActivate: [authGuard],
         title: 'Mis reservas · Biblioteca farsheen',
         loadComponent: () =>
-          import('./features/loans/pages/loans-page/loans-page.component').then(
-            (m) => m.LoansPageComponent,
+          import('./features/reservas/pages/reservas-page/reservas-page.component').then(
+            (m) => m.ReservasPageComponent,
           ),
       },
       {

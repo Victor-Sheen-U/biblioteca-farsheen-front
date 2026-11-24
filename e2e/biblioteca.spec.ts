@@ -114,9 +114,9 @@ test.describe('Suite E2E · Biblioteca farsheen (§12.4 y §12.5)', () => {
     await expect(dialog).toBeVisible();
     await dialog.getByRole('button', { name: 'Confirmar reserva' }).click();
 
-    const drawer = page.getByTestId('loan-drawer-panel');
+    const drawer = page.getByTestId('reservas-drawer-panel');
     await expect(drawer).toBeVisible({ timeout: 10_000 });
-    await drawer.getByTestId('loan-drawer-expand-btn').click();
+    await drawer.getByTestId('reservas-drawer-expand-btn').click();
     await expect(page).toHaveURL(/\/reservas$/, { timeout: 10_000 });
     await expect(page.locator('#loans-page-title')).toContainText('Mis reservas');
     await expect(page.locator('tr[data-loan-row-id]').first()).toBeVisible();
