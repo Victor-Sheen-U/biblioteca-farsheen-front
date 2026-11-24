@@ -184,9 +184,8 @@ export class AdminLibrosPageComponent implements OnInit {
     }
 
     const raw = this.libroForm.getRawValue();
-    const anioNum = raw.anioPublicacion.trim()
-      ? Number.parseInt(raw.anioPublicacion.trim(), 10)
-      : null;
+    const anioStr = String(raw.anioPublicacion ?? '').trim();
+    const anioNum = anioStr ? Number.parseInt(anioStr, 10) : null;
 
     const payload = {
       isbn: raw.isbn.trim(),
