@@ -9,24 +9,22 @@ import { ButtonComponent } from '../../atoms/button/button.component';
   standalone: true,
   imports: [BadgeComponent, ButtonComponent],
   templateUrl: './book-card.component.html',
-  styleUrl: './book-card.component.scss'
+  styleUrl: './book-card.component.scss',
 })
 export class BookCardComponent {
   readonly libro = input.required<LibroCatalogo>();
-  readonly esFavorito = input<boolean>(false);
 
-  readonly pedirPrestado = output<LibroCatalogo>();
+  readonly reservar = output<LibroCatalogo>();
   readonly verDetalles = output<number>();
-  readonly alternarFavorito = output<number>();
 
   readonly portada = computed<EstiloPortadaLibro>(() =>
-    generarEstiloPortada(this.libro().idGenero, this.libro().titulo)
+    generarEstiloPortada(this.libro().idGenero, this.libro().titulo),
   );
 
   readonly nombresAutores = computed<string>(() => {
     const lista = this.libro().autores;
     if (!lista || lista.length === 0) {
-      return 'Autor institucional';
+      return 'Autor no registrado';
     }
     return lista.map((a) => a.nombreAutor).join(', ');
   });
@@ -45,26 +43,21 @@ export class BookCardComponent {
             ? `1 disponible ahora (de ${total})`
             : `${disp} disponibles ahora (de ${total})`,
         clase: 'status--available',
-        disponible: true
+        disponible: true,
       };
     }
     return {
-      texto: 'Sin copias disponibles ahora',
+      texto: total === 0 ? 'Sin ejemplares registrados' : 'Sin copias disponibles ahora',
       clase: 'status--unavailable',
-      disponible: false
+      disponible: false,
     };
   });
 
-  onPedirPrestado(): void {
-    this.pedirPrestado.emit(this.libro());
+  onReservar(): void {
+    this.reservar.emit(this.libro());
   }
 
   onVerDetalles(): void {
     this.verDetalles.emit(this.libro().idLibro);
-  }
-
-  onAlternarFavorito(event: MouseEvent): void {
-    event.stopPropagation();
-    this.alternarFavorito.emit(this.libro().idLibro);
   }
 }

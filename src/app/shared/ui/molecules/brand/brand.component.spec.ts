@@ -2,14 +2,14 @@ import { TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup } from '@angular/forms';
 import {
   calcularFortalezaPassword,
-  passwordsCoincidenValidator
+  passwordsCoincidenValidator,
 } from '../../../../features/auth/pages/login-page/login-page.component';
 import { BrandComponent } from './brand.component';
 
 describe('BrandComponent (F-14 / R4) & Validadores de Auth (F-24)', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BrandComponent]
+      imports: [BrandComponent],
     }).compileComponents();
   });
 
@@ -52,18 +52,18 @@ describe('BrandComponent (F-14 / R4) & Validadores de Auth (F-24)', () => {
     const grupoInvalido = new FormGroup(
       {
         password: new FormControl('Lectura2026*'),
-        confirmarPassword: new FormControl('OtraClave123*')
+        confirmarPassword: new FormControl('OtraClave123*'),
       },
-      { validators: passwordsCoincidenValidator }
+      { validators: passwordsCoincidenValidator },
     );
     expect(grupoInvalido.errors).toEqual({ passwordsNoCoinciden: true });
 
     const grupoValido = new FormGroup(
       {
         password: new FormControl('Lectura2026*'),
-        confirmarPassword: new FormControl('Lectura2026*')
+        confirmarPassword: new FormControl('Lectura2026*'),
       },
-      { validators: passwordsCoincidenValidator }
+      { validators: passwordsCoincidenValidator },
     );
     expect(grupoValido.errors).toBeNull();
 

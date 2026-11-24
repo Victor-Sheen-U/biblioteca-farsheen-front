@@ -1,9 +1,5 @@
 @if (libro(); as item) {
-  <div
-    class="reserva-backdrop"
-    role="presentation"
-    (click)="!enviando() && cerrar.emit()"
-  >
+  <div class="reserva-backdrop" role="presentation" (click)="!enviando() && cerrar.emit()">
     <div
       class="reserva-dialog"
       role="dialog"
@@ -13,18 +9,16 @@
     >
       <header class="reserva-dialog__header">
         <div>
-          <span class="reserva-dialog__eyebrow">Solicitud de préstamo</span>
+          <span class="reserva-dialog__eyebrow">Solicitud de reserva</span>
           <h2 id="reserva-dialog-title" class="reserva-dialog__title">
             {{ item.titulo }}
           </h2>
-          <p class="reserva-dialog__subtitle">
-            ISBN {{ item.isbn }} · {{ item.nombreGenero }}
-          </p>
+          <p class="reserva-dialog__subtitle">ISBN {{ item.isbn }} · {{ item.nombreGenero }}</p>
         </div>
         <button
           type="button"
           class="reserva-dialog__close"
-          aria-label="Cerrar ventana de préstamo"
+          aria-label="Cerrar ventana de reserva"
           [disabled]="enviando()"
           (click)="cerrar.emit()"
         >
@@ -35,7 +29,7 @@
       <form class="reserva-dialog__form" (submit)="onSubmit($event)" novalidate>
         <div class="reserva-dialog__field">
           <label for="reserva-fecha-inicio" class="reserva-dialog__label">
-            Fecha y hora de inicio del préstamo
+            Fecha y hora de inicio de la reserva
           </label>
           <input
             id="reserva-fecha-inicio"
@@ -47,7 +41,8 @@
             (ngModelChange)="onCambioFechaInicio($event)"
           />
           <span class="reserva-dialog__hint">
-            Debe ser una fecha futura. Recuerda que puedes cancelar sin costo hasta 24 h antes del inicio.
+            Debe ser una fecha futura. Recuerda que puedes cancelar sin costo hasta 24 h antes del
+            inicio.
           </span>
         </div>
 
@@ -67,7 +62,10 @@
         </div>
 
         @if (consultandoDisponibilidad()) {
-          <div class="reserva-dialog__availability reserva-dialog__availability--loading" aria-live="polite">
+          <div
+            class="reserva-dialog__availability reserva-dialog__availability--loading"
+            aria-live="polite"
+          >
             Consultando disponibilidad para la fecha seleccionada…
           </div>
         } @else if (disponibilidad(); as disp) {
@@ -78,7 +76,15 @@
             aria-live="polite"
           >
             @if (disp.disponible) {
-              <span>✓ {{ disp.ejemplaresDisponibles }} {{ disp.ejemplaresDisponibles === 1 ? 'ejemplar disponible' : 'ejemplares disponibles' }} para esa fecha de inicio.</span>
+              <span
+                >✓ {{ disp.ejemplaresDisponibles }}
+                {{
+                  disp.ejemplaresDisponibles === 1
+                    ? 'ejemplar disponible'
+                    : 'ejemplares disponibles'
+                }}
+                para esa fecha de inicio.</span
+              >
             } @else {
               <span>⚠ No hay ejemplares libres en ese instante. Prueba otro rango de fechas.</span>
             }
@@ -114,7 +120,7 @@
             type="submit"
             [disabled]="enviando() || !!errorValidacion()"
           >
-            {{ enviando() ? 'Registrando reserva…' : 'Confirmar préstamo' }}
+            {{ enviando() ? 'Registrando reserva…' : 'Confirmar reserva' }}
           </app-button>
         </footer>
       </form>

@@ -6,17 +6,86 @@
     [nombreUsuario]="authService.nombre()"
     [correoUsuario]="authService.correo()"
     [rolUsuario]="authService.rol()"
-    [prestamosActivos]="reservasService.conteoActivas()"
+    [reservasActivas]="reservasService.conteoActivas()"
     [consultaInicial]="consultaUrlQ()"
     (irInicio)="irAlInicio()"
     (buscar)="onBuscarDesdeHeader($event)"
     (cambioBusquedaVivo)="onCambioBusquedaVivo($event)"
-    (abrirBusquedaAvanzada)="onAbrirBusquedaAvanzada()"
-    (abrirPrestamos)="onAbrirMisPrestamos()"
+    (abrirReservas)="onAbrirMisReservas()"
     (cerrarSesion)="onCerrarSesion()"
   />
 
-  <app-theme-toggle />
+  <!-- Sub-barra contextual estilo Apple -->
+  @if (enCatalogo()) {
+    <div class="subbar" role="navigation" aria-label="Secciones del catálogo">
+      <div class="page-container subbar__inner">
+        <span class="subbar__title">Catálogo</span>
+        <div class="subbar__links">
+          <button
+            type="button"
+            class="subbar__link"
+            [class.subbar__link--active]="catalogoSubActivo() === 'todos'"
+            (click)="onSubNavCatalogo('todos')"
+          >
+            Todos
+          </button>
+          <button
+            type="button"
+            class="subbar__link"
+            [class.subbar__link--active]="catalogoSubActivo() === 'generos'"
+            (click)="onSubNavCatalogo('generos')"
+          >
+            Géneros
+          </button>
+          <button
+            type="button"
+            class="subbar__link"
+            [class.subbar__link--active]="catalogoSubActivo() === 'autores'"
+            (click)="onSubNavCatalogo('autores')"
+          >
+            Autores
+          </button>
+          <button
+            type="button"
+            class="subbar__link"
+            [class.subbar__link--active]="catalogoSubActivo() === 'disponibles'"
+            (click)="onSubNavCatalogo('disponibles')"
+          >
+            Disponibles
+          </button>
+        </div>
+      </div>
+    </div>
+  } @else if (enAdmin()) {
+    <div class="subbar" role="navigation" aria-label="Secciones de administración">
+      <div class="page-container subbar__inner">
+        <span class="subbar__title">Administración</span>
+        <div class="subbar__links">
+          <a
+            routerLink="/admin/libros"
+            routerLinkActive="subbar__link--active"
+            class="subbar__link"
+          >
+            Libros
+          </a>
+          <a
+            routerLink="/admin/reservas"
+            routerLinkActive="subbar__link--active"
+            class="subbar__link"
+          >
+            Reservas
+          </a>
+          <a
+            routerLink="/admin/usuarios"
+            routerLinkActive="subbar__link--active"
+            class="subbar__link"
+          >
+            Usuarios
+          </a>
+        </div>
+      </div>
+    </div>
+  }
 
   <main id="contenido" class="layout__main" tabindex="-1">
     <router-outlet />
@@ -54,9 +123,10 @@
   <app-site-footer
     [enInicio]="enInicio()"
     [autenticado]="authService.autenticado()"
+    [rolUsuario]="authService.rol()"
+    [generos]="catalogoService.generosConConteo()"
     (irInicio)="irAlInicio()"
-    (abrirPrestamos)="onAbrirMisPrestamos()"
-    (abrirBusquedaAvanzada)="onAbrirBusquedaAvanzada()"
+    (abrirReservas)="onAbrirMisReservas()"
     (cerrarSesion)="onCerrarSesion()"
   />
 </div>

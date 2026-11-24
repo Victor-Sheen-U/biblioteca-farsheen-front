@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 import { ApiError } from '../../../../core/models/api-error.model';
 import { Disponibilidad } from '../../../../core/models/libro.model';
@@ -11,7 +11,6 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { ReservasService } from '../../../../core/services/reservas.service';
 import { UiStateService } from '../../../../core/services/ui-state.service';
 import { sanitizarReturnUrl } from '../../../../core/utils/return-url.util';
-import { ThemeToggleComponent } from '../../atoms/theme-toggle/theme-toggle.component';
 import { ToastComponent } from '../../molecules/toast/toast.component';
 import { HeaderComponent } from '../../organisms/header/header.component';
 import { LoanDrawerComponent } from '../../organisms/loan-drawer/loan-drawer.component';
@@ -23,15 +22,16 @@ import { SiteFooterComponent } from '../../organisms/site-footer/site-footer.com
   standalone: true,
   imports: [
     RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
     HeaderComponent,
     SiteFooterComponent,
-    ThemeToggleComponent,
     LoanDrawerComponent,
     ReservaDialogComponent,
-    ToastComponent
+    ToastComponent,
   ],
   templateUrl: './main-layout.component.html',
-  styleUrl: './main-layout.component.scss'
+  styleUrl: './main-layout.component.scss',
 })
 export class MainLayoutComponent implements OnInit {
   readonly authService = inject(AuthService);
@@ -45,9 +45,9 @@ export class MainLayoutComponent implements OnInit {
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
       map((e) => e.urlAfterRedirects),
-      startWith(this.router.url || '/')
+      startWith(this.router.url || '/'),
     ),
-    { initialValue: this.router.url || '/' }
+    { initialValue: this.router.url || '/' },
   );
 
   readonly enInicio = computed<boolean>(() => {
@@ -58,6 +58,22 @@ export class MainLayoutComponent implements OnInit {
   readonly enCatalogo = computed<boolean>(() => {
     const path = this.urlActual().split('?')[0];
     return path === '/catalog';
+  });
+
+  readonly enAdmin = computed<boolean>(() => {
+    const path = this.urlActual().split('?')[0];
+    return path.startsWith('/admin');
+  });
+
+  readonly catalogoSubActivo = computed<'todos' | 'generos' | 'autores' | 'disponibles'>(() => {
+    const url = this.urlActual();
+    const qIndex = url.indexOf('?');
+    if (qIndex < 0) return 'todos';
+    const params = new URLSearchParams(url.slice(qIndex + 1));
+    if (params.get('disp') === '1') return 'disponibles';
+    if (params.get('generos')) return 'generos';
+    if (params.get('autores')) return 'autores';
+    return 'todos';
   });
 
   readonly consultaUrlQ = computed<string>(() => {
@@ -89,8 +105,8 @@ export class MainLayoutComponent implements OnInit {
   onBuscarDesdeHeader(termino: string): void {
     const limpio = termino.trim();
     void this.router.navigate(['/catalog'], {
-      queryParams: { q: limpio || null },
-      queryParamsHandling: 'merge'
+      queryParams: { q: limpio || null, page: null },
+      queryParamsHandling: 'merge',
     });
   }
 
@@ -100,25 +116,37 @@ export class MainLayoutComponent implements OnInit {
     }
     const limpio = termino.trim();
     void this.router.navigate(['/catalog'], {
-      queryParams: { q: limpio || null },
+      queryParams: { q: limpio || null, page: null },
       queryParamsHandling: 'merge',
-      replaceUrl: true
+      replaceUrl: true,
     });
   }
 
-  onAbrirBusquedaAvanzada(): void {
-    this.uiState.establecerSidebarCatalogo(true);
-    if (!this.enCatalogo()) {
+  onSubNavCatalogo(seccion: 'todos' | 'generos' | 'autores' | 'disponibles'): void {
+    if (seccion === 'todos') {
       void this.router.navigate(['/catalog']);
+      return;
+    }
+    if (seccion === 'disponibles') {
+      void this.router.navigate(['/catalog'], {
+        queryParams: { disp: '1', page: null },
+        queryParamsHandling: 'merge',
+      });
+      return;
+    }
+    this.uiState.establecerSidebarCatalogo(true);
+    if (typeof document !== 'undefined') {
+      const targetId = seccion === 'generos' ? 'filtro-generos' : 'filtro-autores';
+      document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }
 
-  onAbrirMisPrestamos(): void {
+  onAbrirMisReservas(): void {
     if (!this.authService.verificarSesionActiva()) {
-      this.notifications.show('Inicia sesión para ver tus préstamos', 'info');
+      this.notifications.show('Inicia sesión para ver tus reservas', 'info');
       const returnUrl = sanitizarReturnUrl(this.router.url);
       void this.router.navigate(['/login'], {
-        queryParams: { returnUrl }
+        queryParams: { returnUrl },
       });
       return;
     }
@@ -132,7 +160,7 @@ export class MainLayoutComponent implements OnInit {
   }
 
   onExpansionPanelTerminada(): void {
-    void this.router.navigate(['/loans']).then(() => {
+    void this.router.navigate(['/reservas']).then(() => {
       this.uiState.finalizarExpansionPanel();
     });
   }
@@ -156,11 +184,8 @@ export class MainLayoutComponent implements OnInit {
       },
       error: (err: Partial<ApiError>) => {
         this.cancelandoReservaId.set(null);
-        this.notifications.show(
-          err?.mensaje || 'No fue posible cancelar la reserva.',
-          'error'
-        );
-      }
+        this.notifications.show(err?.mensaje || 'No fue posible cancelar la reserva.', 'error');
+      },
     });
   }
 
@@ -183,7 +208,7 @@ export class MainLayoutComponent implements OnInit {
       error: () => {
         this.disponibilidadModal.set(null);
         this.consultandoDisponibilidad.set(false);
-      }
+      },
     });
   }
 
@@ -197,21 +222,23 @@ export class MainLayoutComponent implements OnInit {
         this.onCerrarModalReserva();
         this.uiState.abrirPanelPrestamos();
         this.notifications.show(
-          `Préstamo registrado para «${creada.tituloLibro}» (Ejemplar #${creada.idEjemplar}).`,
-          'success'
+          `Reserva #${creada.idReserva} confirmada para «${creada.tituloLibro}» (Ejemplar #${creada.idEjemplar}).`,
+          'success',
         );
       },
       error: (err: Partial<ApiError>) => {
         this.enviandoReserva.set(false);
         this.errorReserva.set(
-          err?.mensaje || 'No fue posible registrar la reserva para el rango seleccionado.'
+          err?.mensaje || 'No fue posible registrar la reserva para el rango seleccionado.',
         );
-      }
+      },
     });
   }
 
   onCerrarSesion(): void {
-    const estabaEnRutaProtegida = this.urlActual().startsWith('/loans');
+    const path = this.urlActual().split('?')[0];
+    const estabaEnRutaProtegida =
+      path.startsWith('/reservas') || path.startsWith('/loans') || path.startsWith('/admin');
     this.uiState.cerrarPanelPrestamos();
     this.uiState.cerrarModalReserva();
     this.authService.logout();

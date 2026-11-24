@@ -7,7 +7,7 @@ import { ButtonComponent } from '../../atoms/button/button.component';
   standalone: true,
   imports: [InputComponent, ButtonComponent],
   templateUrl: './search-bar.component.html',
-  styleUrl: './search-bar.component.scss'
+  styleUrl: './search-bar.component.scss',
 })
 export class SearchBarComponent {
   readonly placeholder = input<string>('Buscar por título, autor o ISBN...');

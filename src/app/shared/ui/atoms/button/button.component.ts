@@ -7,7 +7,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
   selector: 'app-button',
   standalone: true,
   templateUrl: './button.component.html',
-  styleUrl: './button.component.scss'
+  styleUrl: './button.component.scss',
 })
 export class ButtonComponent {
   readonly variant = input<ButtonVariant>('primary');

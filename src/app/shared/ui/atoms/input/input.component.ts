@@ -4,7 +4,7 @@ import { Component, input, model } from '@angular/core';
   selector: 'app-input',
   standalone: true,
   templateUrl: './input.component.html',
-  styleUrl: './input.component.scss'
+  styleUrl: './input.component.scss',
 })
 export class InputComponent {
   // Modern Two-Way Signal Model Binding

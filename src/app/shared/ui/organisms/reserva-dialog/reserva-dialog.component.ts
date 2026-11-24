@@ -7,7 +7,7 @@ import {
   computed,
   input,
   output,
-  signal
+  signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Disponibilidad, LibroCatalogo } from '../../../../core/models/libro.model';
@@ -42,7 +42,7 @@ export function normalizarDatetimeLocalAIso(valorInput: string): string {
   standalone: true,
   imports: [FormsModule, ButtonComponent],
   templateUrl: './reserva-dialog.component.html',
-  styleUrl: './reserva-dialog.component.scss'
+  styleUrl: './reserva-dialog.component.scss',
 })
 export class ReservaDialogComponent implements OnChanges, OnDestroy {
   readonly libro = input<LibroCatalogo | null>(null);
@@ -131,7 +131,7 @@ export class ReservaDialogComponent implements OnChanges, OnDestroy {
     const payload: ReservaCreate = {
       idLibro: actual.idLibro,
       fechaInicio: normalizarDatetimeLocalAIso(this.fechaInicio()),
-      fechaEntrega: normalizarDatetimeLocalAIso(this.fechaEntrega())
+      fechaEntrega: normalizarDatetimeLocalAIso(this.fechaEntrega()),
     };
 
     this.confirmar.emit(payload);
@@ -152,7 +152,7 @@ export class ReservaDialogComponent implements OnChanges, OnDestroy {
 
     this.consultarDisponibilidad.emit({
       idLibro,
-      fechaHora: formatearFechaIsoLocal(inicio)
+      fechaHora: formatearFechaIsoLocal(inicio),
     });
   }
 
@@ -175,7 +175,7 @@ export class ReservaDialogComponent implements OnChanges, OnDestroy {
     this.disponibilidadTimer = setTimeout(() => {
       this.consultarDisponibilidad.emit({
         idLibro: actual.idLibro,
-        fechaHora: normalizarDatetimeLocalAIso(inicioStr)
+        fechaHora: normalizarDatetimeLocalAIso(inicioStr),
       });
     }, 250);
   }

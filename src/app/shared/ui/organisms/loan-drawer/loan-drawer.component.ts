@@ -1,17 +1,9 @@
 import { DatePipe } from '@angular/common';
-import {
-  Component,
-  HostListener,
-  OnDestroy,
-  effect,
-  input,
-  output,
-  signal
-} from '@angular/core';
+import { Component, HostListener, OnDestroy, effect, input, output, signal } from '@angular/core';
 import { Reserva } from '../../../../core/models/reserva.model';
 import {
   EvaluacionCancelacion,
-  puedeCancelarReserva
+  puedeCancelarReserva,
 } from '../../../../core/services/reservas.service';
 import { BadgeComponent } from '../../atoms/badge/badge.component';
 import { ButtonComponent } from '../../atoms/button/button.component';
@@ -21,7 +13,7 @@ import { ButtonComponent } from '../../atoms/button/button.component';
   standalone: true,
   imports: [DatePipe, BadgeComponent, ButtonComponent],
   templateUrl: './loan-drawer.component.html',
-  styleUrl: './loan-drawer.component.scss'
+  styleUrl: './loan-drawer.component.scss',
 })
 export class LoanDrawerComponent implements OnDestroy {
   readonly abierto = input<boolean>(false);
